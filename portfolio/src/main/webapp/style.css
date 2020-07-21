@@ -1,9 +1,129 @@
-#content {
-  margin-left: auto;
-  margin-right: auto;
-  width: 650px;
+.body {
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
 }
 
-#greeting-container {
-  margin-top: 20px;
+.header {
+    height: auto;
+    background-image: url(/images/me.jpg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 0;
+    padding-top: 66.64%;
+    opacity: 0.6;
+    text-shadow: white 3px 3px 10px;
+}
+
+.header-text {
+    margin-top: -45%;
+    margin-left: 5%;
+    font-size: 2.5vw;
+}
+
+#intro,
+#whereFrom,
+#contacts,
+#name {
+    text-align: center;
+}
+
+#contacts {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main {}
+
+.invisible {
+    display: none;
+}
+
+.navbar {
+    font-size: 24px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: -webkit-sticky;
+    /* Safari */
+    position: sticky;
+    top: 0;
+}
+
+.navbar a {
+    float: left;
+}
+
+.navbar a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #111;
+}
+
+.quizButton {
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    background-color: white;
+    color: black;
+    border: 2px solid #555555;
+}
+
+.quizButton:hover {
+    background-color: #555555;
+    color: white;
+}
+
+.quizQuestion {
+    margin: 16px 0 1s6px 0;
+    font-size: 25px;
+}
+
+.quizScore,
+.quizEnd,
+.quizResult {
+    font-size: 24px;
+}
+
+.fa {
+    padding: 20px;
+    font-size: 4vw;
+    width: 4vw;
+    text-align: center;
+    text-decoration: none;
+}
+
+/* Add a hover effect if you want */
+.fa:hover {
+    opacity: 0.7;
+}
+
+.fa-linkedin {
+    background: #007bb5;
+    color: white;
+}
+
+.fa-facebook {
+    background: #3B5998;
+    color: white;
+}
+
+.fa-github {
+    background: #000;
+    color: white;
 }
