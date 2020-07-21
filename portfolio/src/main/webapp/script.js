@@ -19,26 +19,23 @@
 
 function start() {
     const questions = [
-        "Where is the Moscow State University situalted?",
-        "Why was the previous question about MSU?",
+        "Who is the first Russian tsar?",
         "Who of these people has ever been to Sakhalin?",
         "Who is Checkov?",
         "Who is Pushkin?",
-        "Wht is Sakhalin?",
+        "What is Sakhalin?",
         "What is the purpose of this quiz?",
     ];
     const rightAnswers = [
-        "Russia",
-        "I only have been there once or twice",
+        "Ivan IV",
         "Checkov",
         "Russian writer",
         "Russian poet",
         "an island",
-        "Ugh..",
+        "I like Russia!",
     ];
     const leftAnswers = [
-        "Moscow",
-        "I study there",
+        "Petr I",
         "Pushkin",
         "Russian scientist",
         "Russian musician",
@@ -67,7 +64,6 @@ function start() {
     correctText.classList.add("quizResult");
     wrongText.classList.add("quizResult");
 
-
     quizContainer.append(scoreElement);
     quizContainer.append(question);
     quizContainer.append(leftButton);
@@ -84,19 +80,7 @@ function start() {
         }, 1000);
 
         currentQuestion += 1;
-        if (currentQuestion >= questions.length) {
-            let endText = document.createElement("div");
-            endText.innerText = `Your score: ` + score +
-                `/` + questions.length + `. Thank you for playing! By the way, that's true, the right answer is always right :)`;
-            endText.classList.add("quizEnd");
-            quizContainer.innerHTML = "";
-            quizContainer.append(endText);
-            return;
-        }
-        scoreElement.innerHTML = "Current score: " + score;
-        question.innerHTML = questions[currentQuestion];
-        leftButton.innerHTML = leftAnswers[currentQuestion];
-        rightButton.innerHTML = rightAnswers[currentQuestion];
+        nextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     rightButton.addEventListener("click", (ev) => {
         score += 1;
@@ -106,23 +90,27 @@ function start() {
         }, 1000);
 
         currentQuestion += 1;
-        if (currentQuestion >= questions.length) {
-            let endText = document.createElement("div");
-            endText.innerText = `Your score: ` + score +
-                `/` + questions.length + `. Thank you for playing! By the way, that's true, the right answer is always right :)`;
-            endText.classList.add("quizEnd");
-            quizContainer.innerHTML = "";
-            quizContainer.append(endText);
-            return;
-        }
-        scoreElement.innerHTML = "Current score: " + score;
-        question.innerHTML = questions[currentQuestion];
-        leftButton.innerHTML = leftAnswers[currentQuestion];
-        rightButton.innerHTML = rightAnswers[currentQuestion];
+        nextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
+    nextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+}
 
+function nextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
+    if (currentQuestion >= questions.length) {
+        endGame(score, questions, quizContainer);
+        return;
+    }
     scoreElement.innerHTML = "Current score: " + score;
     question.innerHTML = questions[currentQuestion];
     leftButton.innerHTML = leftAnswers[currentQuestion];
     rightButton.innerHTML = rightAnswers[currentQuestion];
+}
+
+function endGame(score, questions, quizContainer) {
+    let endText = document.createElement("div");
+    endText.innerText = `Your score: ` + score +
+        `/` + questions.length + `. Thank you for playing! By the way, that's true, the right answer is always right :)`;
+    endText.classList.add("quizEnd");
+    quizContainer.innerHTML = "";
+    quizContainer.append(endText);
 }
