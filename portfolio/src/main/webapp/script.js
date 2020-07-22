@@ -76,7 +76,7 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayNextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     rightButton.addEventListener("click", (ev) => {
         score += 1;
@@ -86,13 +86,13 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayNextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     // display first question
-    displayNextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+    displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
 }
 
-function displayNextQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
+function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
     // if it was the last question
     if (currentQuestion == questions.length) {
         endGame(score, questions, quizContainer);
