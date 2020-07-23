@@ -94,7 +94,7 @@ function initGame() {
 
 function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
     // if it was the last question
-    if (currentQuestion == questions.length) {
+    if (currentQuestion === questions.length) {
         endGame(score, questions, quizContainer);
         return;
     }
