@@ -14,6 +14,24 @@
 
 "use strict"
 
+// loads comments
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("/comments").then((response) => (response.json())).then((json) => {
+        const commentsContainer = document.querySelector(".comments-container");
+        console.log(json);
+        json.forEach((comment) => {
+            commentsContainer.append(createCommentElement(comment.commentText));
+        });
+    });
+});
+
+function createCommentElement(text) {
+    let commentElement = document.createElement("div");
+    commentElement.classList.add("comment-item");
+    commentElement.innerHTML = text;
+    return commentElement;
+}
+
 function initGame() {
     const questions = [
         "Who is the first Russian tsar?",

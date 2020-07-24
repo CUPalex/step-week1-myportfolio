@@ -50,6 +50,15 @@
         <section id="quiz">
             <button onclick="initGame()" class="quiz-button">Start</button>
         </section>
+        <h1 class="section-title" id="comments">Comments</h1>
+        <section>
+            <div class="comments-container"></div>
+            <form action="/comments" method="POST">
+            <p>Your comment:</p>
+            <input type="text" name="comment-text">
+            <input type="submit" />
+            </form>
+        </section>
     </main>
     <footer></footer>
 </body>
