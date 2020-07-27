@@ -14,15 +14,34 @@
 
 "use strict"
 
-// loads comments
+// is called when page loads
 document.addEventListener("DOMContentLoaded", () => {
-    fetch("/comments").then((response) => (response.json())).then((json) => {
+    // set max-comments variable and change event on it
+    const DEFAULT_COMMENTS_NUMBER = 3;
+    let maxComments = DEFAULT_COMMENTS_NUMBER;
+    const maxCommentsElement = document.getElementById("max-comments");
+    maxCommentsElement.addEventListener("change", (event) => {
+        maxComments = parseInt(event.target.value);
+        // if parseInt couldn't parse the value or the value is negative
+        if (isNaN(maxComments) || maxComments < 0) {
+            maxComments = DEFAULT_COMMENTS_NUMBER;
+        }
+        // reload comments
+        loadComments(maxComments);
+    });
+    // initially load comments
+    loadComments(maxComments);
+});
+
+function loadComments(maxComments){
+    fetch(`/comments?maxcomments=${maxComments}`).then((response) => (response.json())).then((json) => {
         const commentsContainer = document.querySelector(".comments-container");
+        commentsContainer.innerHTML = "";
         json.forEach((comment) => {
             commentsContainer.append(createCommentElement(comment));
         });
     });
-});
+}
 
 // creates and returns DOM comment-item element from class from datastore
 function createCommentElement(comment) {

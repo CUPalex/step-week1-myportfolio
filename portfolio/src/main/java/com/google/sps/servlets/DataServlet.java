@@ -17,6 +17,7 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
@@ -36,14 +37,27 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    final int DEFAULT_COMMENTS_NUMBER = 3;
+    // try to get maxComments parameter from request and check if it is valid
+    // if not valid - set to default
+    int maxNumberOfComments;
+    try {
+        maxNumberOfComments = Integer.parseInt(request.getParameter("maxcomments"));
+    } catch (NumberFormatException e) {
+        maxNumberOfComments = DEFAULT_COMMENTS_NUMBER;
+    }
+    if (maxNumberOfComments < 0) {
+        maxNumberOfComments = DEFAULT_COMMENTS_NUMBER;
+    }
+
     // get comments from datastore
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
-
+    
     // put comments into arraylist
     ArrayList<Comment> comments = new ArrayList<>();
-    for (Entity entity : results.asIterable()) {
+    for (Entity entity : results.asIterable(FetchOptions.Builder.withLimit(maxNumberOfComments))) {
       String  commentText = (String) entity.getProperty("commentText");
       String  commentOwner = (String) entity.getProperty("commentOwner");
       long timestamp = (long) entity.getProperty("timestamp");
