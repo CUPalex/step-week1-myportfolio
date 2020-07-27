@@ -45,8 +45,9 @@ public class DataServlet extends HttpServlet {
     ArrayList<Comment> comments = new ArrayList<>();
     for (Entity entity : results.asIterable()) {
       String  commentText = (String) entity.getProperty("commentText");
+      String  commentOwner = (String) entity.getProperty("commentOwner");
       long timestamp = (long) entity.getProperty("timestamp");
-      Comment comment = new Comment(commentText, timestamp);
+      Comment comment = new Comment(commentText, commentOwner, timestamp);
       comments.add(comment);
     }
 
@@ -61,11 +62,12 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // get comment from form
+    // get comment fields from form
     String comment = request.getParameter("comment-text");
-    // if comment is empty - redirect back and do nothing
+    String owner = request.getParameter("comment-owner");
+    // if comment or owner is empty - redirect back and do nothing
     // TODO : do something apart from redirect
-    if (comment == null) {
+    if (comment == null || owner == null) {
         response.sendRedirect("/#comments");
     }
     // get time for comment entity
@@ -74,6 +76,7 @@ public class DataServlet extends HttpServlet {
     // create comment entity
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("commentText", comment);
+    commentEntity.setProperty("commentOwner", owner);
     commentEntity.setProperty("timestamp", timestamp);
 
     // put comment entity int the database

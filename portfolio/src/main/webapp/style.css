@@ -166,3 +166,75 @@ footer {
     text-align: center;
     background-color: #333;
 }
+
+/* comments */
+.comment-item {
+    padding: 10px 18px;
+    background-color: #DCDCDC;
+    margin: 5px 0;
+    width: 100%;
+    border: 2px solid #555;
+}
+
+.comment-owner {
+    display: inline-block;
+    font-size: 3.5vw;
+    margin-right: 3.5vw;
+}
+
+.comment-date {
+    display: inline-block;
+    font-style: italic;
+}
+
+.comment-text {
+    margin-top: 5px;
+}
+
+.comment-input-text {
+    padding: 12px 18px;
+    height: 100px;
+    width: 100%;
+    border: 2px solid #555;
+    resize: none;
+    background-color: #DCDCDC;
+}
+
+.comment-input-owner {
+    background-color: #DCDCDC;
+    border: 2px solid #555;
+    padding: 12px 18px;
+    height: 10px;
+    width: 100%;
+}
+
+.comment-input-title {
+    font-weight: bold;
+    font-size: 3vw;
+    margin-bottom: 1vw;
+}
+
+.comment-input-owner:focus,
+.comment-input-text:focus {
+    background-color: white;
+    border: 2px solid #555;
+}
+
+.comment-button {
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 3vw;
+    margin: 4px 2px 4px 0;
+    transition-duration: .4s;
+    cursor: pointer;
+    background-color: white;
+    color: black;
+    border: 2px solid #555;
+}
+
+.comment-button:hover {
+    background-color: #555;
+    color: white;
+}

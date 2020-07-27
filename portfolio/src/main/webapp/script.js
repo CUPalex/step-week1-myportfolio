@@ -18,17 +18,33 @@
 document.addEventListener("DOMContentLoaded", () => {
     fetch("/comments").then((response) => (response.json())).then((json) => {
         const commentsContainer = document.querySelector(".comments-container");
-        console.log(json);
         json.forEach((comment) => {
-            commentsContainer.append(createCommentElement(comment.commentText));
+            commentsContainer.append(createCommentElement(comment));
         });
     });
 });
 
-function createCommentElement(text) {
+// creates and returns DOM comment-item element from class from datastore
+function createCommentElement(comment) {
     let commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
-    commentElement.innerHTML = text;
+
+    let commentOwner = document.createElement("div");
+    commentOwner.classList.add("comment-owner");
+    commentOwner.innerHTML = comment.commentOwner;
+    commentElement.append(commentOwner);
+
+    let commentDate = document.createElement("div");
+    commentDate.classList.add("comment-date");
+    // converts time in milliseconds to readable date string
+    let date = new Date(comment.timestamp).toLocaleDateString();
+    commentDate.innerHTML = date;
+    commentElement.append(commentDate);
+
+    let commentText = document.createElement("div");
+    commentText.classList.add("comment-text");
+    commentText.innerHTML = comment.commentText;
+    commentElement.append(commentText);
     return commentElement;
 }
 

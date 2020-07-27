@@ -18,10 +18,12 @@ package com.google.sps.data;
 public final class Comment {
 
   private final String commentText;
+  private final String commentOwner;
   private final long timestamp;
 
-  public Comment(String commentText, long timestamp) {
+  public Comment(String commentText, String commentOwner, long timestamp) {
     this.commentText = commentText;
+    this.commentOwner = commentOwner;
     this.timestamp = timestamp;
   }
 }
