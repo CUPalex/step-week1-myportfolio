@@ -35,6 +35,11 @@ import java.util.List;
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
 
+  /* expects maxcomments parameter (int)
+   * returns json of comments
+   * the number of comments equals to maxcomments (or less if maxcomments is
+   * greater than total number of comments in database)
+   */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     final int DEFAULT_COMMENTS_NUMBER = 3;
@@ -74,6 +79,10 @@ public class DataServlet extends HttpServlet {
     response.getWriter().println(json);
   }
 
+  /* expects comment-text, comment-owner parameters
+   * returns redirect
+   * puts comment to the database
+   */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     // get comment fields from form

@@ -31,9 +31,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+/* Deletes all comments on every POST request */
 @WebServlet("/delete-data")
 public class CommentDeleteServlet extends HttpServlet {
-
+  
+  /* Deletes all comments */
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Query query = new Query("Comment");

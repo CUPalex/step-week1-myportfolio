@@ -14,7 +14,7 @@
 
 package com.google.sps.data;
 
-/** A comment item */
+/* A comment item */
 public final class Comment {
 
   private final String commentText;
