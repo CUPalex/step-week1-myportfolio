@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Servlet that stores and returns comments */
+/* Servlet that stores and returns comments */
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
 
@@ -50,12 +50,12 @@ public class DataServlet extends HttpServlet {
         maxNumberOfComments = DEFAULT_COMMENTS_NUMBER;
     }
 
-    // get comments from datastore
+    // get prepared query of comments from datastore
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery results = datastore.prepare(query);
     
-    // put comments into arraylist
+    // put comments into arraylist. request from prepared query only maxNumber of first comments
     ArrayList<Comment> comments = new ArrayList<>();
     for (Entity entity : results.asIterable(FetchOptions.Builder.withLimit(maxNumberOfComments))) {
       String  commentText = (String) entity.getProperty("commentText");

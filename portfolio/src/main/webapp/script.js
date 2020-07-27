@@ -16,9 +16,10 @@
 
 // is called when page loads
 document.addEventListener("DOMContentLoaded", () => {
-    // set max-comments variable and change event on it
+    // set max-comments variable
     const DEFAULT_COMMENTS_NUMBER = 3;
     let maxComments = DEFAULT_COMMENTS_NUMBER;
+    // set event to change maxComments variable
     const maxCommentsElement = document.getElementById("max-comments");
     maxCommentsElement.addEventListener("change", (event) => {
         maxComments = parseInt(event.target.value);
@@ -29,6 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // reload comments
         loadComments(maxComments);
     });
+    // set event to delete comments
+    const buttonDeleteComments = document.getElementById("comments-delete");
+    buttonDeleteComments.addEventListener("click", deleteAllComments);
     // initially load comments
     loadComments(maxComments);
 });
@@ -41,6 +45,10 @@ function loadComments(maxComments){
             commentsContainer.append(createCommentElement(comment));
         });
     });
+}
+
+function deleteAllComments() {
+    fetch("/delete-data", { method: "POST" }).then(() => loadComments(0));
 }
 
 // creates and returns DOM comment-item element from class from datastore
