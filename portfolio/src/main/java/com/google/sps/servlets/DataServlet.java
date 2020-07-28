@@ -42,17 +42,17 @@ public class DataServlet extends HttpServlet {
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    final int DEFAULT_COMMENTS_NUMBER = 3;
+    final int MAX_COMMENTS_NUMBER = 1000;
     // try to get maxComments parameter from request and check if it is valid
-    // if not valid - set to default
+    // if not valid - set to MAX_COMMENTS_NUMBER, i.e. return practically all comments
     int maxNumberOfComments;
     try {
         maxNumberOfComments = Integer.parseInt(request.getParameter("maxcomments"));
     } catch (NumberFormatException e) {
-        maxNumberOfComments = DEFAULT_COMMENTS_NUMBER;
+        maxNumberOfComments = MAX_COMMENTS_NUMBER;
     }
-    if (maxNumberOfComments < 0) {
-        maxNumberOfComments = DEFAULT_COMMENTS_NUMBER;
+    if (maxNumberOfComments < 0 || maxNumberOfComments > MAX_COMMENTS_NUMBER) {
+        maxNumberOfComments = MAX_COMMENTS_NUMBER;
     }
 
     // get prepared query of comments from datastore
@@ -75,7 +75,7 @@ public class DataServlet extends HttpServlet {
     String json = gson.toJson(comments);
 
     // send response
-    response.setContentType("text/html;");
+    response.setContentType("application/json;");
     response.getWriter().println(json);
   }
 
@@ -89,7 +89,6 @@ public class DataServlet extends HttpServlet {
     String comment = request.getParameter("comment-text");
     String owner = request.getParameter("comment-owner");
     // if comment or owner is empty - redirect back and do nothing
-    // TODO : do something apart from redirect
     if (comment == null || owner == null) {
         response.sendRedirect("/#comments");
     }

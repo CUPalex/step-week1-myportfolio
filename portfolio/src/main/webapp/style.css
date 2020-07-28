@@ -193,6 +193,7 @@ footer {
 
 .comment-input-text {
     padding: 12px 18px;
+    font-family: "Roboto Mono", monospace;
     height: 100px;
     width: 100%;
     border: 2px solid #555;
@@ -202,6 +203,7 @@ footer {
 
 .comment-input-owner {
     background-color: #DCDCDC;
+    font-family: "Roboto Mono", monospace;
     border: 2px solid #555;
     padding: 12px 18px;
     height: 10px;
@@ -237,4 +239,18 @@ footer {
 .comment-button:hover {
     background-color: #555;
     color: white;
+}
+
+.error-input {
+    background-color: white;
+    border: 2px solid red;
+}
+
+.error-message {
+    background-color: pink;
+    color: red;
+    padding: 12px 20px;
+    font-size: 3vw;
+    margin: 4px 0;
+    width: 100%;
 }

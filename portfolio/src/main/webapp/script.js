@@ -18,57 +18,102 @@
 document.addEventListener("DOMContentLoaded", () => {
     // set max-comments variable
     const DEFAULT_COMMENTS_NUMBER = 3;
+    const MAX_COMMENTS_NUMBER = 10;
     let maxComments = DEFAULT_COMMENTS_NUMBER;
     // set event to change maxComments variable
     const maxCommentsElement = document.getElementById("max-comments");
     maxCommentsElement.addEventListener("change", (event) => {
-        maxComments = parseInt(event.target.value);
-        // if parseInt couldn't parse the value or the value is negative
-        if (isNaN(maxComments) || maxComments < 0) {
-            maxComments = DEFAULT_COMMENTS_NUMBER;
+        const inputMaxComments = parseInt(event.target.value);
+        // validation of maxComments number
+        if (isNaN(inputMaxComments)) {
+            displayErrorInput(maxCommentsElement, "Please, write a number in Arabic numerals");
+            return;
         }
-        // reload comments
+        if (inputMaxComments < 0) {
+            displayErrorInput(maxCommentsElement, "Please, write a positive number");
+            return;
+        }
+        if (inputMaxComments > MAX_COMMENTS_NUMBER) {
+            displayErrorInput(maxCommentsElement, `Please, write a number less than ${MAX_COMMENTS_NUMBER}`);
+            return;
+        }
+        maxComments = inputMaxComments;
+        // reload comments if valid
         loadComments(maxComments);
     });
     // set event to delete comments
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
+    // add validation to comment-add form
+    const commentAddForm = document.getElementById("comment-add-form");
+    commentAddForm.addEventListener("submit", commentAddFormValidate);
     // initially load comments
     loadComments(maxComments);
 });
 
+function commentAddFormValidate(event) {
+    // if name field is empty
+    if (event.target.elements["comment-owner"].value === "") {
+        displayErrorInput(event.target.elements["comment-owner"], "Please, enter your name");
+        event.preventDefault();
+    }
+    // if comment-text field is empty
+    if (event.target.elements["comment-text"].value === "") {
+        displayErrorInput(event.target.elements["comment-text"], "Please, enter your comment");
+        event.preventDefault();
+    }
+}
+
 function loadComments(maxComments){
-    fetch(`/comments?maxcomments=${maxComments}`).then((response) => (response.json())).then((json) => {
-        const commentsContainer = document.querySelector(".comments-container");
-        commentsContainer.innerHTML = "";
-        json.forEach((comment) => {
-            commentsContainer.append(createCommentElement(comment));
-        });
+    // load comments from DataServlet and read them as json
+    fetch(`/comments?maxcomments=${maxComments}`).
+            then((response) => (response.json())).then((json) => {
+              const commentsContainer = document.querySelector(".comments-container");
+              commentsContainer.innerHTML = "";
+              json.forEach((comment) => {
+              commentsContainer.append(createCommentElement(comment));
+            });
     });
 }
 
 function deleteAllComments() {
+    // delete all comments in CommentDeleteServlet and refresh comment section on page
     fetch("/delete-data", { method: "POST" }).then(() => loadComments(0));
+}
+
+function displayErrorInput(inputElement, errorString) {
+    inputElement.classList.add("error-input");
+    const errorMessage = document.createElement("div");
+    errorMessage.classList.add("error-message");
+    errorMessage.innerHTML = errorString;
+    inputElement.after(errorMessage);
+    const removeErrorDisplay = function() {
+        inputElement.classList.remove("error-input");
+        errorMessage.remove();
+        inputElement.removeEventListener("click", removeErrorDisplay);
+    };
+    inputElement.addEventListener("click", removeErrorDisplay);
+    setTimeout(removeErrorDisplay, 5000);
 }
 
 // creates and returns DOM comment-item element from class from datastore
 function createCommentElement(comment) {
-    let commentElement = document.createElement("div");
+    const commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
 
-    let commentOwner = document.createElement("div");
+    const commentOwner = document.createElement("div");
     commentOwner.classList.add("comment-owner");
     commentOwner.innerHTML = comment.commentOwner;
     commentElement.append(commentOwner);
 
-    let commentDate = document.createElement("div");
+    const commentDate = document.createElement("div");
     commentDate.classList.add("comment-date");
     // converts time in milliseconds to readable date string
-    let date = new Date(comment.timestamp).toLocaleDateString();
+    const date = new Date(comment.timestamp).toLocaleDateString();
     commentDate.innerHTML = date;
     commentElement.append(commentDate);
 
-    let commentText = document.createElement("div");
+    const commentText = document.createElement("div");
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
     commentElement.append(commentText);
