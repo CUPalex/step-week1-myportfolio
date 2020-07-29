@@ -14,6 +14,7 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -21,8 +22,10 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.QueryResultList;
 import com.google.gson.Gson;
 import com.google.sps.data.Comment;
+import com.google.sps.data.CommentsSend;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,34 +38,63 @@ import java.util.List;
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
 
-  /* expects maxcomments parameter (int)
-   * returns json of comments
+  /* expects maxcomments parameter (int) and 
+   *.        cursor parameter (string)
+   * if parameters don't exist, returns MAX_COMMENTS_NUMBER of first comments
+   * if parameters are invalid - redirects to '/'
+   * returns json of CommentsSend object
    * the number of comments equals to maxcomments (or less if maxcomments is
    * greater than total number of comments in database)
+   * cursor sets the point in query from which to start returning data (similar to offset,
+   * but doesn't load data before cursor point)
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     final int MAX_COMMENTS_NUMBER = 1000;
     // try to get maxComments parameter from request and check if it is valid
-    // if not valid - set to MAX_COMMENTS_NUMBER, i.e. return practically all comments
+    // if parameter is empty - set to MAX_COMMENTS_NUMBER, i.e. return practically all comments
+    // if parameter is invalid - redirect
+    String maxCommentsString = request.getParameter("maxcomments");
+    if (maxCommentsString == null) {
+        maxCommentsString = Integer.toString(MAX_COMMENTS_NUMBER);
+    }
     int maxNumberOfComments;
     try {
-        maxNumberOfComments = Integer.parseInt(request.getParameter("maxcomments"));
+        maxNumberOfComments = Integer.parseInt(maxCommentsString);
     } catch (NumberFormatException e) {
-        maxNumberOfComments = MAX_COMMENTS_NUMBER;
+        response.sendRedirect("/");
+        return;
     }
     if (maxNumberOfComments < 0 || maxNumberOfComments > MAX_COMMENTS_NUMBER) {
-        maxNumberOfComments = MAX_COMMENTS_NUMBER;
+        response.sendRedirect("/");
+        return;
     }
 
-    // get prepared query of comments from datastore
+    // make prepared query of comments from datastore
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
+    PreparedQuery pq = datastore.prepare(query);
+    // additional options for query - limit of entities
+    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments);
+    // try to get cursor parameter
+    // if empty - think like it is set to beginning
+    // if invalid - redirect
+    String startCursor = request.getParameter("cursor");
+    if (startCursor != null) {
+      fetchOptions.startCursor(Cursor.fromWebSafeString(startCursor));
+    }
+    QueryResultList<Entity> results;
+    try {
+      results = pq.asQueryResultList(fetchOptions);
+    } catch (IllegalArgumentException e) {
+      // invalid cursor
+      response.sendRedirect("/");
+      return;
+    }
     
     // put comments into arraylist. request from prepared query only maxNumber of first comments
     ArrayList<Comment> comments = new ArrayList<>();
-    for (Entity entity : results.asIterable(FetchOptions.Builder.withLimit(maxNumberOfComments))) {
+    for (Entity entity : results) {
       String  commentText = (String) entity.getProperty("commentText");
       String  commentOwner = (String) entity.getProperty("commentOwner");
       long timestamp = (long) entity.getProperty("timestamp");
@@ -70,9 +102,15 @@ public class DataServlet extends HttpServlet {
       comments.add(comment);
     }
 
-    // convert arraylist to json string
+    // to send cursor back
+    String cursorString = results.getCursor().toWebSafeString();
+
+    // object to send back
+    CommentsSend commentsSend = new CommentsSend(cursorString, comments);
+
+    // convert commentSend object to json string
     Gson gson = new Gson();
-    String json = gson.toJson(comments);
+    String json = gson.toJson(commentsSend);
 
     // send response
     response.setContentType("application/json;");

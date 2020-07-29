@@ -254,3 +254,23 @@ footer {
     margin: 4px 0;
     width: 100%;
 }
+
+.pagination {
+    display: inline-block;
+}
+
+.pagination div {
+    color: black;
+    float: left;
+    padding: 8px 16px;
+
+}
+
+.pagination .active {
+    background-color: #555;
+    color: white;
+}
+
+.pagination div:hover:not(.active) {
+    background-color: #ddd;
+}

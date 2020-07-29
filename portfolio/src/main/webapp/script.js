@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         maxComments = inputMaxComments;
-        // reload comments if valid
+        // reload comments
         loadComments(maxComments);
     });
     // set event to delete comments
@@ -64,16 +64,33 @@ function commentAddFormValidate(event) {
     }
 }
 
-function loadComments(maxComments){
+function loadComments(maxComments) {
+    // cursor if a parameter for server
+    // it points to the next entity in query that will be loaded
+    // we need it for pagination
+    let cursor;
     // load comments from DataServlet and read them as json
-    fetch(`/comments?maxcomments=${maxComments}`).
-            then((response) => (response.json())).then((json) => {
+    const load = function() {
+        // include cursor in fetchURL
+        let fetchURL = `/comments?maxcomments=${maxComments}`;
+        if (cursor !== undefined) {
+            fetchURL += `&cursor=${cursor}`;
+        }
+        // fetch data
+        fetch(fetchURL).then((response) => (response.json())).then((json) => {
               const commentsContainer = document.querySelector(".comments-container");
               commentsContainer.innerHTML = "";
-              json.forEach((comment) => {
+              json.comments.forEach((comment) => {
               commentsContainer.append(createCommentElement(comment));
+              // update cursor value
+              cursor = json.cursor;
             });
-    });
+        });
+    };
+    load();
+    // set event listeners for pagination
+    const rightArrow = document.getElementById("pagination-right");
+    rightArrow.addEventListener("click", load);
 }
 
 function deleteAllComments() {
