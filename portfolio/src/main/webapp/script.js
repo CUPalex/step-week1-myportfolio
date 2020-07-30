@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const DEFAULT_COMMENTS_NUMBER = 3;
     const MAX_COMMENTS_NUMBER = 10;
     let maxComments = DEFAULT_COMMENTS_NUMBER;
+
     // set event to change maxComments variable
     const maxCommentsElement = document.getElementById("max-comments");
     maxCommentsElement.addEventListener("change", (event) => {
@@ -38,15 +39,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         maxComments = inputMaxComments;
+
         // reload comments if valid
         loadComments(maxComments);
     });
     // set event to delete comments
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
+
     // add validation to comment-add form
     const commentAddForm = document.getElementById("comment-add-form");
     commentAddForm.addEventListener("submit", commentAddFormValidate);
+
     // initially load comments
     loadComments(maxComments);
 });
@@ -59,6 +63,7 @@ function commentAddFormValidate(event) {
         displayErrorInput(event.target.elements["comment-owner"], "Please, enter your name");
         event.preventDefault();
     }
+
     // if comment-text field is empty
     if (event.target.elements["comment-text"].value === "") {
         displayErrorInput(event.target.elements["comment-text"], "Please, enter your comment");
@@ -88,30 +93,41 @@ function deleteAllComments() {
 // display error message after input element and mark
 // input element as errored
 function displayErrorInput(inputElement, errorString) {
+    // mark input element as errored
     inputElement.classList.add("error-input");
+
+    // put error message after input element
     const errorMessage = document.createElement("div");
     errorMessage.classList.add("error-message");
     errorMessage.innerHTML = errorString;
     inputElement.after(errorMessage);
+
+    // func to remove error message and unmark input element
     const removeErrorDisplay = function() {
         inputElement.classList.remove("error-input");
         errorMessage.remove();
         inputElement.removeEventListener("click", removeErrorDisplay);
     };
+
+    // romoveErrorDisplay() triggers after the input element was clicked
+    // or 5s after error message was shown
     inputElement.addEventListener("click", removeErrorDisplay);
     setTimeout(removeErrorDisplay, 5000);
 }
 
 // creates and returns DOM comment-item element from class from datastore
 function createCommentElement(comment) {
+    // create comment element
     const commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
 
+    // create comment-owner field and append it to commentElement
     const commentOwner = document.createElement("div");
     commentOwner.classList.add("comment-owner");
     commentOwner.innerHTML = comment.commentOwner;
     commentElement.append(commentOwner);
 
+    // create comment-date field and append it to commentElement
     const commentDate = document.createElement("div");
     commentDate.classList.add("comment-date");
     // converts time in milliseconds to readable date string
@@ -119,10 +135,12 @@ function createCommentElement(comment) {
     commentDate.innerHTML = date;
     commentElement.append(commentDate);
 
+    // create comment-text field and append it to commentElement
     const commentText = document.createElement("div");
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
     commentElement.append(commentText);
+
     return commentElement;
 }
 
