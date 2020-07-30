@@ -26,4 +26,8 @@ public final class Comment {
     this.commentOwner = commentOwner;
     this.timestamp = timestamp;
   }
+
+  public long getTimestamp(){
+      return timestamp;
+  }
 }

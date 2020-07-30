@@ -21,129 +21,219 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.datastore.QueryResultList;
 import com.google.gson.Gson;
 import com.google.sps.data.Comment;
 import com.google.sps.data.CommentsSend;
+
 import java.io.IOException;
+import java.lang.ClassCastException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 import java.util.List;
 
 /* Servlet that stores and returns comments */
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
+    // for debug and probably future uses
+    // final Logger log = Logger.getLogger(DataServlet.class.getName());
 
-  /* expects maxcomments parameter (int) and 
-   *.        cursor parameter (string)
-   * if parameters don't exist, returns MAX_COMMENTS_NUMBER of first comments
-   * if parameters are invalid - redirects to '/'
-   * returns json of CommentsSend object
-   * the number of comments equals to maxcomments (or less if maxcomments is
-   * greater than total number of comments in database)
-   * cursor sets the point in query from which to start returning data (similar to offset,
-   * but doesn't load data before cursor point)
-   */
-  @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    final int MAX_COMMENTS_NUMBER = 1000;
-    // try to get maxComments parameter from request and check if it is valid
-    // if parameter is empty - set to MAX_COMMENTS_NUMBER, i.e. return practically all comments
-    // if parameter is invalid - redirect
-    String maxCommentsString = request.getParameter("maxcomments");
-    if (maxCommentsString == null) {
-        maxCommentsString = Integer.toString(MAX_COMMENTS_NUMBER);
+    /* expects maxcomments parameter (int); default: MAX_COMMENTS_NUMBER
+     *.        timestamp parameter (long); default: current time + const
+     *.        direction (next or previous : string); default: next
+     *.        commentsonpage (int) (currently); default: maxcomments
+     * if parameters are invalid - redirects to '/'
+     * returns json of CommentsSend object
+     * CommentsSend.comments consists of maxcomments (or less) comments, which timestamp >
+     * lastTimestamp if direction = next, or <= lastTimestamp (- maxcomments comments) if direction = previous
+     */
+    @Override
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        final int MAX_COMMENTS_NUMBER = 1000;
+
+        // get maxComments parameter
+        String maxNumberOfCommentsString = request.getParameter("maxcomments");
+        int maxNumberOfComments;
+        if (maxNumberOfCommentsString == null) {
+            maxNumberOfComments = MAX_COMMENTS_NUMBER;
+        } else {
+            try {
+                maxNumberOfComments = Integer.parseInt(maxNumberOfCommentsString);
+            } catch (NumberFormatException e) {
+                response.sendRedirect("/");
+                return;
+            }
+        }
+        if (maxNumberOfComments < 0 || maxNumberOfComments > MAX_COMMENTS_NUMBER) {
+            response.sendRedirect("/");
+            return;
+        }
+
+        // get lastTimestamp parameter
+        String lastTimestampString = request.getParameter("timestamp");
+        long lastTimestamp;
+        if (lastTimestampString == null) {
+            lastTimestamp = System.currentTimeMillis() + 10;
+        } else {
+            try {
+                lastTimestamp = Long.parseLong(lastTimestampString);
+            } catch (NumberFormatException e) {
+                response.sendRedirect("/");
+                return;
+            }
+        }
+
+        // get direction parameter
+        String direction = request.getParameter("direction");
+        if (direction == null) {
+            direction = "next";
+        }
+        if (!direction.equals("next") && !direction.equals("previous")) {
+            response.sendRedirect("/");
+            return;
+        }
+
+        // get commentsOnPage parameter (on current page)
+        String commentsOnPageString = request.getParameter("commentsonpage");
+        int commentsOnPage;
+        if (commentsOnPageString == null) {
+            commentsOnPage = maxNumberOfComments;
+        } else {
+            try {
+                commentsOnPage = Integer.parseInt(commentsOnPageString);
+            } catch (NumberFormatException e) {
+                response.sendRedirect("/");
+                return;
+            }
+        }
+
+        // query options
+        Filter timeFilter;
+        SortDirection sortDirection;
+        FetchOptions fetchOptions;
+
+        // set query options depending on whether the user want to see next or previous comments
+        if (direction.equals("next")) {
+            timeFilter =
+                    new FilterPredicate("timestamp", FilterOperator.LESS_THAN, lastTimestamp);
+            sortDirection = SortDirection.DESCENDING;
+            fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments);
+        } else {
+            // if previous - sort query in other direction and get comments than are
+            // currently on page and those we will load
+            timeFilter =
+                    new FilterPredicate("timestamp", FilterOperator.GREATER_THAN_OR_EQUAL, lastTimestamp);
+            sortDirection = SortDirection.ASCENDING;
+            fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments + commentsOnPage);
+        }
+
+        // get datastore
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        // check if user wants next comments, and current comment is already the last one
+        // if so, return current comments
+        long minTimestamp = getMinTimestamp(datastore);
+        if (minTimestamp == lastTimestamp && direction.equals("next")) {
+            timeFilter =
+                    new FilterPredicate("timestamp", FilterOperator.GREATER_THAN_OR_EQUAL, lastTimestamp);
+            sortDirection = SortDirection.ASCENDING;
+            fetchOptions = FetchOptions.Builder.withLimit(commentsOnPage);
+            direction = "stay";
+        }
+
+        // make prepared query of comments from datastore
+        Query query = new Query("Comment").addSort("timestamp", sortDirection).setFilter(timeFilter);
+        PreparedQuery pq = datastore.prepare(query);
+
+        // put comments into arraylist
+        ArrayList<Comment> comments = new ArrayList<>();
+        for (Entity entity : pq.asIterable(fetchOptions)) {
+            String commentText = (String) entity.getProperty("commentText");
+            String commentOwner = (String) entity.getProperty("commentOwner");
+            long timestamp = (long) entity.getProperty("timestamp");
+            Comment comment = new Comment(commentText, commentOwner, timestamp);
+            comments.add(comment);
+        }
+
+        // reverse comments and offset current comments
+        if (direction.equals("previous")) {
+            Collections.reverse(comments);
+            comments = new ArrayList<Comment>(comments.subList(0, maxNumberOfComments));
+        }
+        // reverse comments
+        if (direction.equals("stay")) {
+            Collections.reverse(comments);
+        }
+
+        // object to send back
+        long newTimestamp;
+        try {
+            newTimestamp = comments.get(comments.size() - 1).getTimestamp();
+        } catch (IndexOutOfBoundsException e) {
+            newTimestamp = 0;
+        }
+        CommentsSend commentsSend = new CommentsSend(newTimestamp, comments);
+
+        // convert commentSend object to json string
+        Gson gson = new Gson();
+        String json = gson.toJson(commentsSend);
+
+        // send response
+        response.setContentType("application/json;");
+        response.getWriter().println(json);
     }
-    int maxNumberOfComments;
-    try {
-        maxNumberOfComments = Integer.parseInt(maxCommentsString);
-    } catch (NumberFormatException e) {
-        response.sendRedirect("/");
-        return;
-    }
-    if (maxNumberOfComments < 0 || maxNumberOfComments > MAX_COMMENTS_NUMBER) {
-        response.sendRedirect("/");
-        return;
-    }
 
-    // make prepared query of comments from datastore
-    Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery pq = datastore.prepare(query);
-    // additional options for query - limit of entities
-    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments);
-    // try to get cursor parameter
-    // if empty - think like it is set to beginning
-    // if invalid - redirect
-    String startCursor = request.getParameter("cursor");
-    if (startCursor != null) {
-      fetchOptions.startCursor(Cursor.fromWebSafeString(startCursor));
-    }
-    QueryResultList<Entity> results;
-    try {
-      results = pq.asQueryResultList(fetchOptions);
-    } catch (IllegalArgumentException e) {
-      // invalid cursor
-      response.sendRedirect("/");
-      return;
-    }
-    
-    // put comments into arraylist. request from prepared query only maxNumber of first comments
-    ArrayList<Comment> comments = new ArrayList<>();
-    for (Entity entity : results) {
-      String  commentText = (String) entity.getProperty("commentText");
-      String  commentOwner = (String) entity.getProperty("commentOwner");
-      long timestamp = (long) entity.getProperty("timestamp");
-      Comment comment = new Comment(commentText, commentOwner, timestamp);
-      comments.add(comment);
-    }
+    /* expects comment-text, comment-owner parameters
+     * returns redirect
+     * puts comment to the database
+     */
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // get comment fields from form
+        String comment = request.getParameter("comment-text");
+        String owner = request.getParameter("comment-owner");
+        // if comment or owner is empty - redirect back and do nothing
+        if (comment == null || owner == null) {
+            response.sendRedirect("/#comments");
+        }
+        // get time for comment entity
+        long timestamp = System.currentTimeMillis();
 
-    // to send cursor back
-    String cursorString = results.getCursor().toWebSafeString();
+        // create comment entity
+        Entity commentEntity = new Entity("Comment");
+        commentEntity.setProperty("commentText", comment);
+        commentEntity.setProperty("commentOwner", owner);
+        commentEntity.setProperty("timestamp", timestamp);
 
-    // object to send back
-    CommentsSend commentsSend = new CommentsSend(cursorString, comments);
+        // put comment entity int the database
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        datastore.put(commentEntity);
 
-    // convert commentSend object to json string
-    Gson gson = new Gson();
-    String json = gson.toJson(commentsSend);
-
-    // send response
-    response.setContentType("application/json;");
-    response.getWriter().println(json);
-  }
-
-  /* expects comment-text, comment-owner parameters
-   * returns redirect
-   * puts comment to the database
-   */
-  @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // get comment fields from form
-    String comment = request.getParameter("comment-text");
-    String owner = request.getParameter("comment-owner");
-    // if comment or owner is empty - redirect back and do nothing
-    if (comment == null || owner == null) {
+        // send back to index page
         response.sendRedirect("/#comments");
     }
-    // get time for comment entity
-    long timestamp = System.currentTimeMillis();
 
-    // create comment entity
-    Entity commentEntity = new Entity("Comment");
-    commentEntity.setProperty("commentText", comment);
-    commentEntity.setProperty("commentOwner", owner);
-    commentEntity.setProperty("timestamp", timestamp);
-
-    // put comment entity int the database
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(commentEntity);
-
-    // send back to index page
-    response.sendRedirect("/#comments");
-  }
+    /* gets min timestamp from datastore of comments
+     */
+    private static long getMinTimestamp(DatastoreService datastore) {
+        Query query = new Query("Comment").addSort("timestamp", SortDirection.ASCENDING);
+        FetchOptions fetchOptions = FetchOptions.Builder.withLimit(1);
+        PreparedQuery pq = datastore.prepare(query);
+        long minTimestamp;
+        try {
+            minTimestamp = (long) pq.asList(fetchOptions).get(0).getProperty("timestamp");
+        } catch (IndexOutOfBoundsException e) {
+            minTimestamp = 0;
+        }
+        return minTimestamp;
+    }
 }

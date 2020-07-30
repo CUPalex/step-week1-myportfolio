@@ -65,16 +65,21 @@ function commentAddFormValidate(event) {
 }
 
 function loadComments(maxComments) {
-    // cursor if a parameter for server
-    // it points to the next entity in query that will be loaded
-    // we need it for pagination
-    let cursor;
+    // properties of comments currently on page. for request
+    let lastTimestamp;
+    let commentsOnPage;
     // load comments from DataServlet and read them as json
-    const load = function() {
-        // include cursor in fetchURL
+    const load = function(direction) {
+        // include parameters in fetchURL
         let fetchURL = `/comments?maxcomments=${maxComments}`;
-        if (cursor !== undefined) {
-            fetchURL += `&cursor=${cursor}`;
+        if (lastTimestamp !== undefined) {
+            fetchURL += `&timestamp=${lastTimestamp}`;
+        }
+        if (direction !== undefined) {
+            fetchURL += `&direction=${direction}`;
+        }
+        if (commentsOnPage !== undefined) {
+            fetchURL += `&commentsonpage=${commentsOnPage}`;
         }
         // fetch data
         fetch(fetchURL).then((response) => (response.json())).then((json) => {
@@ -82,20 +87,25 @@ function loadComments(maxComments) {
               commentsContainer.innerHTML = "";
               json.comments.forEach((comment) => {
               commentsContainer.append(createCommentElement(comment));
-              // update cursor value
-              cursor = json.cursor;
             });
-        });
+            // update current values for future requests
+            lastTimestamp = json.lastTimestamp;
+            commentsOnPage = json.comments.length;
+        }).catch((error) => console.log("load comments fetch error: " + error));
     };
+    // actually load comments
     load();
     // set event listeners for pagination
     const rightArrow = document.getElementById("pagination-right");
-    rightArrow.addEventListener("click", load);
+    rightArrow.onclick =  () => load("next");
+    const leftArrow = document.getElementById("pagination-left");
+    leftArrow.onclick =  () => load("previous");
 }
 
 function deleteAllComments() {
     // delete all comments in CommentDeleteServlet and refresh comment section on page
-    fetch("/delete-data", { method: "POST" }).then(() => loadComments(0));
+    fetch("/delete-data", { method: "POST" }).then(() => loadComments(0))
+            .catch((error) => console.log("deleteAllCommentsError: " + error));
 }
 
 function displayErrorInput(inputElement, errorString) {
