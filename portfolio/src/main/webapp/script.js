@@ -51,6 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadComments(maxComments);
 });
 
+// validation of comment-add form
+// if any of the fields if empty - display error message
 function commentAddFormValidate(event) {
     // if name field is empty
     if (event.target.elements["comment-owner"].value === "") {
@@ -64,6 +66,7 @@ function commentAddFormValidate(event) {
     }
 }
 
+// load maxComments comments and put them on page
 function loadComments(maxComments){
     // load comments from DataServlet and read them as json
     fetch(`/comments?maxcomments=${maxComments}`).
@@ -76,11 +79,14 @@ function loadComments(maxComments){
     });
 }
 
+// delete all comments from database
 function deleteAllComments() {
     // delete all comments in CommentDeleteServlet and refresh comment section on page
     fetch("/delete-data", { method: "POST" }).then(() => loadComments(0));
 }
 
+// display error message after input element and mark
+// input element as errored
 function displayErrorInput(inputElement, errorString) {
     inputElement.classList.add("error-input");
     const errorMessage = document.createElement("div");
@@ -120,6 +126,7 @@ function createCommentElement(comment) {
     return commentElement;
 }
 
+// init quiz game
 function initGame() {
     const questions = [
         "Who is the first Russian tsar?",
@@ -182,7 +189,8 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+         score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     rightButton.addEventListener("click", (ev) => {
         score += 1;
@@ -192,13 +200,19 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+         score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     // display first question
-    displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+    displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+     score, scoreElement, leftButton, rightButton, question, quizContainer);
 }
 
-function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
+// display question on page
+// if question asked to display is the one after the last question (i.e. it
+// doesn't exist) - end game
+function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+ score, scoreElement, leftButton, rightButton, question, quizContainer) {
     // if it was the last question
     if (currentQuestion === questions.length) {
         endGame(score, questions, quizContainer);
@@ -211,6 +225,7 @@ function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, 
     rightButton.innerHTML = rightAnswers[currentQuestion];
 }
 
+// display end-game message
 function endGame(score, questions, quizContainer) {
     // creating element with "thanks for playing" text
     const endText = document.createElement("div");
