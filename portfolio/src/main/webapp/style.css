@@ -15,7 +15,7 @@ header {
     text-shadow: white 3px 3px 10px;
     color: #000;
     margin: -36% 2.5% auto auto;
-    font-size: 2.5vw;
+    font-size: 2vw;
 }
 
 #intro,
@@ -28,7 +28,7 @@ header {
 /* general styles */
 main {
     padding: 0 100px;
-    font-size: 2.5vw;
+    font-size: 1.5vw;
 }
 
 .invisible {
@@ -36,15 +36,34 @@ main {
 }
 
 .section-title {
-    font-size: 5vw;
+    font-size: 3vw;
+}
+
+.button {
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 2vw;
+    margin: 4px 2px 4px 0;
+    transition-duration: .4s;
+    cursor: pointer;
+    background-color: white;
+    color: black;
+    border: 2px solid #555;
+}
+
+.button:hover {
+    background-color: #555;
+    color: white;
 }
 
 /* navbar */
 nav {
-    font-size: 3vw;
+    font-size: 2.5vw;
     list-style-type: none;
     margin: 0;
-    padding: 0;
+    padding: 3vw 0;
     overflow: hidden;
     background-color: #333;
     position: -webkit-sticky;
@@ -70,25 +89,6 @@ nav a:hover {
 }
 
 /* quiz */
-.quiz-button {
-    padding: 16px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 3vw;
-    margin: 4px 2px 4px 0;
-    transition-duration: .4s;
-    cursor: pointer;
-    background-color: white;
-    color: black;
-    border: 2px solid #555;
-}
-
-.quiz-button:hover {
-    background-color: #555;
-    color: white;
-}
-
 .quiz-question {
     margin: 0 0 6px 0;
 }
@@ -129,13 +129,13 @@ nav a:hover {
 /* my recent projects section */
 .proj-title {
     font-weight: bold;
-    font-size: 3vw;
+    font-size: 2vw;
     margin-bottom: 1vw;
 }
 
 .proj-link {
     opacity: .7;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-style: italic;
     margin-left: 3vw;
 }
@@ -143,7 +143,7 @@ nav a:hover {
 .proj-tech {
     margin-left: 3vw;
     opacity: .7;
-    font-size: 2vw;
+    font-size: 1.5vw;
     font-style: italic;
 }
 
@@ -178,7 +178,7 @@ footer {
 
 .comment-owner {
     display: inline-block;
-    font-size: 3.5vw;
+    font-size: 2vw;
     margin-right: 3.5vw;
 }
 
@@ -222,23 +222,12 @@ footer {
     border: 2px solid #555;
 }
 
-.comment-button {
-    padding: 16px 32px;
-    text-align: center;
-    text-decoration: none;
+#max-comments {
     display: inline-block;
-    font-size: 3vw;
-    margin: 4px 2px 4px 0;
-    transition-duration: .4s;
-    cursor: pointer;
-    background-color: white;
-    color: black;
     border: 2px solid #555;
-}
-
-.comment-button:hover {
-    background-color: #555;
-    color: white;
+    height: 2.5vw;
+    width: 5vw;
+    padding: 0 5px;
 }
 
 .error-input {
@@ -250,7 +239,7 @@ footer {
     background-color: pink;
     color: red;
     padding: 12px 20px;
-    font-size: 3vw;
+    font-size: 2vw;
     margin: 4px 0;
     width: 100%;
 }
