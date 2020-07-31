@@ -14,7 +14,6 @@
 
 package com.google.sps.servlets;
 
-import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -44,15 +43,12 @@ import java.util.List;
 /* Servlet that stores and returns comments */
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
-    // for debug and probably future uses
-    // final Logger log = Logger.getLogger(DataServlet.class.getName());
-
     /* expects maxcomments parameter (int); default: MAX_COMMENTS_NUMBER
      *.        timestamp parameter (long); default: current time + const
      *.        direction (next or previous : string); default: next
      *.        commentsonpage (int) (currently); default: maxcomments
      * if parameters are invalid - redirects to '/'
-     * returns json of CommentsSend object
+     * returns json of Commeend object
      * CommentsSend.comments consists of maxcomments (or less) comments, which timestamp >
      * lastTimestamp if direction = next, or <= lastTimestamp (- maxcomments comments) if direction = previous
      */
@@ -128,7 +124,7 @@ public class DataServlet extends HttpServlet {
             sortDirection = SortDirection.DESCENDING;
             fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments);
         } else {
-            // if previous - sort query in other direction and get comments than are
+            // if previous - sort query in other direction and get comments that are
             // currently on page and those we will load
             timeFilter =
                     new FilterPredicate("timestamp", FilterOperator.GREATER_THAN_OR_EQUAL, lastTimestamp);
@@ -164,12 +160,14 @@ public class DataServlet extends HttpServlet {
             comments.add(comment);
         }
 
-        // reverse comments and offset current comments
+        // reverse comments and offset current comments if direction==previous
         if (direction.equals("previous")) {
             Collections.reverse(comments);
-            comments = new ArrayList<Comment>(comments.subList(0, maxNumberOfComments));
+            comments = new ArrayList<Comment>(
+                comments.subList(0, Math.min(maxNumberOfComments, comments.size())));
         }
-        // reverse comments
+
+        // reverse comments if direction==stay
         if (direction.equals("stay")) {
             Collections.reverse(comments);
         }
