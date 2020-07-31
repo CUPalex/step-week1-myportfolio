@@ -76,10 +76,12 @@ function loadComments(maxComments){
     // properties of comments currently on page. for request
     let lastTimestamp;
     let commentsOnPage;
+    
     // load comments from DataServlet and read them as json
     const load = function(direction) {
         // include parameters in fetchURL
         let fetchURL = `/comments?maxcomments=${maxComments}`;
+
         if (lastTimestamp !== undefined) {
             fetchURL += `&timestamp=${lastTimestamp}`;
         }
@@ -89,6 +91,7 @@ function loadComments(maxComments){
         if (commentsOnPage !== undefined) {
             fetchURL += `&commentsonpage=${commentsOnPage}`;
         }
+
         // fetch data
         fetch(fetchURL).then((response) => (response.json())).then((json) => {
               const commentsContainer = document.querySelector(".comments-container");
@@ -96,13 +99,16 @@ function loadComments(maxComments){
               json.comments.forEach((comment) => {
               commentsContainer.append(createCommentElement(comment));
             });
+
             // update current values for future requests
             lastTimestamp = json.lastTimestamp;
             commentsOnPage = json.comments.length;
         }).catch((error) => console.log("load comments fetch error: " + error));
     };
+
     // actually load comments
     load();
+
     // set event listeners for pagination
     const rightArrow = document.getElementById("pagination-right");
     rightArrow.onclick =  () => load("next");
@@ -136,7 +142,7 @@ function displayErrorInput(inputElement, errorString) {
         inputElement.removeEventListener("click", removeErrorDisplay);
     };
 
-    // romoveErrorDisplay() triggers after the input element was clicked
+    // removeErrorDisplay() triggers after the input element was clicked
     // or 5s after error message was shown
     inputElement.addEventListener("click", removeErrorDisplay);
     setTimeout(removeErrorDisplay, 5000);
