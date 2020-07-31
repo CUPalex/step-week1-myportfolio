@@ -5,53 +5,69 @@
     <meta charset="UTF-8">
     <title>Aleksandra Bakalova</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
 </head>
 
 <body>
-    <header></header>
-    <div class="header-text">
-        <h1 id="name">Aleksandra Bakalova</h1>
-        <h2 id="intro">Google STEP intern, HSE CS student</h2>
-        <h3 id="where-from">Moscow, Russia</h3>
-        <div id="contacts">
-            <a href="https://www.facebook.com/profile.php?id=100008682917759" class="fa fa-facebook"></a>
-            <a href="https://www.linkedin.com/in/aleksandra-bakalova-0454781b2" class="fa fa-linkedin"></a>
-            <a href="https://github.com/CUPalex" class="fa fa-github"></a>
-            <a href="mailto:abakalova@google.com" class="fa fa-envelope"></a>
-        </div>
+<header></header>
+<div class="header-text">
+    <h1 id="name">Aleksandra Bakalova</h1>
+    <h2 id="intro">Google STEP intern, HSE CS student</h2>
+    <h3 id="where-from">Moscow, Russia</h3>
+    <div id="contacts">
+        <a href="https://www.facebook.com/profile.php?id=100008682917759" class="fa fa-facebook"></a>
+        <a href="https://www.linkedin.com/in/aleksandra-bakalova-0454781b2" class="fa fa-linkedin"></a>
+        <a href="https://github.com/CUPalex" class="fa fa-github"></a>
+        <a href="mailto:abakalova@google.com" class="fa fa-envelope"></a>
     </div>
-    <nav>
-        <a href="#about-me"> About me </a>
-        <a href="#my-projects"> Projects</a>
-        <a href="#fun-quiz"> Fun quiz</a>
-    </nav>
-    <main>
-        <h1 class="section-title" id="about-me"> About me </h1>
-        <section class="about-text">
-            I am currently a student at Higher School of Economics, Moscow, Russia. I have just finished my 1st year of Bachelor's.<br>
-            I study Applied Mathemathics and Computer Science there.<br>
-            When I was younger, I wanted to be a programmer, because I believed that the future stands behind new technologies, and it is probably the only way to make the world a better place and solve the problems that people of other professions state. Also I think that writing code is really fun :)<br>
-            Currently I am learning, so I am excited to do anything new and open to any ideas you might have or for a simple small talk. Feel free to communicate with me via the contact links on top of the page. <br>
-        </section>
-        <h1 class="section-title" id="my-projects">My recent projects</h1>
-        <section class="my-projects">
-            <div class="proj-title">Portfolio website (2020)</div>
-            <div class=proj-link>Link: <a href="#">this website</a></div>
-            <div class="proj-tech">HTML, CSS, JavaScript</div>
-            <div class="proj-desc">A website that contains some information about myself</div>
-            <div class="proj-title">Arcade game "BlindSpot" (2019)</div>
-            <div class=proj-link>Link: <a href="https://bitly.su/r4idA1g">.apk file</a></div>
-            <div class="proj-tech">Unity 2D, C#</div>
-            <div class="proj-desc">Level-based arcade game where player needs to escape an office with a bag of gold without being spotted by non-player characters moving around. Group project (3 members)</div>
-        </section>
-        <h1 class="section-title" id="fun-quiz">Superfun quiz</h1>
-        <section id="quiz">
-            <button onclick="initGame()" class="quiz-button">Start</button>
-        </section>
-    </main>
-    <footer></footer>
+</div>
+<nav>
+    <a href="#about-me"> About me </a>
+    <a href="#my-projects"> Projects</a>
+    <a href="#fun-quiz"> Fun quiz</a>
+</nav>
+<main>
+    <h1 class="section-title" id="about-me"> About me </h1>
+    <section class="about-text">
+        I am currently a student at Higher School of Economics, Moscow, Russia. I have just finished my 1st year of Bachelor's.<br>
+        I study Applied Mathemathics and Computer Science there.<br>
+        When I was younger, I wanted to be a programmer, because I believed that the future stands behind new technologies, and it is probably the only way to make the world a better place and solve the problems that people of other professions state. Also I think that writing code is really fun :)<br>
+        Currently I am learning, so I am excited to do anything new and open to any ideas you might have or for a simple small talk. Feel free to communicate with me via the contact links on top of the page. <br>
+    </section>
+    <h1 class="section-title" id="my-projects">My recent projects</h1>
+    <section class="my-projects">
+        <div class="proj-title">Portfolio website (2020)</div>
+        <div class=proj-link>Link: <a href="#">this website</a></div>
+        <div class="proj-tech">HTML, CSS, JavaScript</div>
+        <div class="proj-desc">A website that contains some information about myself</div>
+        <div class="proj-title">Arcade game "BlindSpot" (2019)</div>
+        <div class=proj-link>Link: <a href="https://bitly.su/r4idA1g">.apk file</a></div>
+        <div class="proj-tech">Unity 2D, C#</div>
+        <div class="proj-desc">Level-based arcade game where player needs to escape an office with a bag of gold without being spotted by non-player characters moving around. Group project (3 members)</div>
+    </section>
+    <h1 class="section-title" id="fun-quiz">Superfun quiz</h1>
+    <section id="quiz">
+        <button onclick="initGame()" class="button">Start</button>
+    </section>
+    <h1 class="section-title" id="comments">Comments</h1>
+    <section>
+        <label for="max-comments">Max number of comments on page:</label>
+        <input type="text" name="max-comments" id="max-comments">
+        <div class="comments-container"></div>
+        <form action="/comments" method="POST" id="comment-add-form">
+            <p class="comment-input-title">Add your comment:</p>
+            <label for="comment-owner">Name: </label>
+            <input type="text" class="comment-input-owner" name="comment-owner">
+            <label for="comment-text">Comment: </label>
+            <textarea class="comment-input-text" name="comment-text"></textarea>
+            <input type="submit" class="button">
+        </form>
+    </section>
+    <button id="comments-delete" class="button">Delete all comments</button>
+</main>
+<footer></footer>
 </body>
 
 </html>
