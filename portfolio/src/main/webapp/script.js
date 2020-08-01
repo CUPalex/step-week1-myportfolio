@@ -220,8 +220,8 @@ function initGame() {
     correctText.classList.add("invisible");
     wrongText.classList.add("invisible");
     question.classList.add("quiz-question");
-    leftButton.classList.add("quiz-button");
-    rightButton.classList.add("quiz-button");
+    leftButton.classList.add("button");
+    rightButton.classList.add("button");
 
     quizContainer.append(scoreElement);
     quizContainer.append(question);
