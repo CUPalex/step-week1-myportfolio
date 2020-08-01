@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const DEFAULT_COMMENTS_NUMBER = 3;
     const MAX_COMMENTS_NUMBER = 10;
     let maxComments = DEFAULT_COMMENTS_NUMBER;
+
     // set event to change maxComments variable
     const maxCommentsElement = document.getElementById("max-comments");
     maxCommentsElement.addEventListener("change", (event) => {
@@ -38,25 +39,31 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         maxComments = inputMaxComments;
+
         // reload comments
         loadComments(maxComments);
     });
     // set event to delete comments
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
+
     // add validation to comment-add form
     const commentAddForm = document.getElementById("comment-add-form");
     commentAddForm.addEventListener("submit", commentAddFormValidate);
+
     // initially load comments
     loadComments(maxComments);
 });
 
+// validation of comment-add form
+// if any of the fields if empty - display error message
 function commentAddFormValidate(event) {
     // if name field is empty
     if (event.target.elements["comment-owner"].value === "") {
         displayErrorInput(event.target.elements["comment-owner"], "Please, enter your name");
         event.preventDefault();
     }
+
     // if comment-text field is empty
     if (event.target.elements["comment-text"].value === "") {
         displayErrorInput(event.target.elements["comment-text"], "Please, enter your comment");
@@ -64,14 +71,17 @@ function commentAddFormValidate(event) {
     }
 }
 
-function loadComments(maxComments) {
+// load maxComments comments and put them on page
+function loadComments(maxComments){
     // properties of comments currently on page. for request
     let lastTimestamp;
     let commentsOnPage;
+    
     // load comments from DataServlet and read them as json
     const load = function(direction) {
         // include parameters in fetchURL
         let fetchURL = `/comments?maxcomments=${maxComments}`;
+
         if (lastTimestamp !== undefined) {
             fetchURL += `&timestamp=${lastTimestamp}`;
         }
@@ -81,6 +91,7 @@ function loadComments(maxComments) {
         if (commentsOnPage !== undefined) {
             fetchURL += `&commentsonpage=${commentsOnPage}`;
         }
+
         // fetch data
         fetch(fetchURL).then((response) => (response.json())).then((json) => {
               const commentsContainer = document.querySelector(".comments-container");
@@ -88,13 +99,16 @@ function loadComments(maxComments) {
               json.comments.forEach((comment) => {
               commentsContainer.append(createCommentElement(comment));
             });
+
             // update current values for future requests
             lastTimestamp = json.lastTimestamp;
             commentsOnPage = json.comments.length;
         }).catch((error) => console.log("load comments fetch error: " + error));
     };
+
     // actually load comments
     load();
+
     // set event listeners for pagination
     const rightArrow = document.getElementById("pagination-right");
     rightArrow.onclick =  () => load("next");
@@ -102,37 +116,51 @@ function loadComments(maxComments) {
     leftArrow.onclick =  () => load("previous");
 }
 
+// delete all comments from database
 function deleteAllComments() {
     // delete all comments in CommentDeleteServlet and refresh comment section on page
     fetch("/delete-data", { method: "POST" }).then(() => loadComments(0))
             .catch((error) => console.log("deleteAllCommentsError: " + error));
 }
 
+// display error message after input element and mark
+// input element as errored
 function displayErrorInput(inputElement, errorString) {
+    // mark input element as errored
     inputElement.classList.add("error-input");
+
+    // put error message after input element
     const errorMessage = document.createElement("div");
     errorMessage.classList.add("error-message");
     errorMessage.innerHTML = errorString;
     inputElement.after(errorMessage);
+
+    // func to remove error message and unmark input element
     const removeErrorDisplay = function() {
         inputElement.classList.remove("error-input");
         errorMessage.remove();
         inputElement.removeEventListener("click", removeErrorDisplay);
     };
+
+    // removeErrorDisplay() triggers after the input element was clicked
+    // or 5s after error message was shown
     inputElement.addEventListener("click", removeErrorDisplay);
     setTimeout(removeErrorDisplay, 5000);
 }
 
 // creates and returns DOM comment-item element from class from datastore
 function createCommentElement(comment) {
+    // create comment element
     const commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
 
+    // create comment-owner field and append it to commentElement
     const commentOwner = document.createElement("div");
     commentOwner.classList.add("comment-owner");
     commentOwner.innerHTML = comment.commentOwner;
     commentElement.append(commentOwner);
 
+    // create comment-date field and append it to commentElement
     const commentDate = document.createElement("div");
     commentDate.classList.add("comment-date");
     // converts time in milliseconds to readable date string
@@ -140,13 +168,16 @@ function createCommentElement(comment) {
     commentDate.innerHTML = date;
     commentElement.append(commentDate);
 
+    // create comment-text field and append it to commentElement
     const commentText = document.createElement("div");
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
     commentElement.append(commentText);
+
     return commentElement;
 }
 
+// init quiz game
 function initGame() {
     const questions = [
         "Who is the first Russian tsar?",
@@ -209,7 +240,8 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+         score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     rightButton.addEventListener("click", (ev) => {
         score += 1;
@@ -219,13 +251,19 @@ function initGame() {
         }, 1000);
 
         currentQuestion += 1;
-        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+        displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+         score, scoreElement, leftButton, rightButton, question, quizContainer);
     });
     // display first question
-    displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer);
+    displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+     score, scoreElement, leftButton, rightButton, question, quizContainer);
 }
 
-function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, score, scoreElement, leftButton, rightButton, question, quizContainer) {
+// display question on page
+// if question asked to display is the one after the last question (i.e. it
+// doesn't exist) - end game
+function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
+ score, scoreElement, leftButton, rightButton, question, quizContainer) {
     // if it was the last question
     if (currentQuestion === questions.length) {
         endGame(score, questions, quizContainer);
@@ -238,6 +276,7 @@ function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers, 
     rightButton.innerHTML = rightAnswers[currentQuestion];
 }
 
+// display end-game message
 function endGame(score, questions, quizContainer) {
     // creating element with "thanks for playing" text
     const endText = document.createElement("div");
