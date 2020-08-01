@@ -25,6 +25,8 @@ import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
 import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.datastore.QueryResultList;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.google.sps.data.Comment;
 import com.google.sps.data.CommentsSend;
@@ -196,6 +198,14 @@ public class DataServlet extends HttpServlet {
      */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // get reference to UserService
+        UserService userService = UserServiceFactory.getUserService();
+        // if user is not logged in, s/he can't post comments - send her/him to "/"
+        if (!userService.isUserLoggedIn()) {
+            response.sendRedirect("/");
+            return;
+        }
+        
         // get comment fields from form
         String comment = request.getParameter("comment-text");
         String owner = request.getParameter("comment-owner");
