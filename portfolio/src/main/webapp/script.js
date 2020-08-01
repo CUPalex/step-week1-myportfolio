@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // reload comments
         loadComments(maxComments);
     });
+
     // set event to delete comments
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
@@ -51,9 +52,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const commentAddForm = document.getElementById("comment-add-form");
     commentAddForm.addEventListener("submit", commentAddFormValidate);
 
+    checkAuth();
+
     // initially load comments
     loadComments(maxComments);
 });
+
+function checkAuth() {
+    fetch("/auth").then((response) => (response.json())).then((json) => {
+        const url = json.url;
+        if (json.isLoggedIn) {
+            const logoutNav = document.createElement("a");
+            logoutNav.innerHTML = "Logout";
+            logoutNav.classList.add("right-align");
+            logoutNav.setAttribute("id", "logout-nav");
+            logoutNav.setAttribute("href", url);
+            const loginNav = document.getElementById("login-nav");
+            loginNav.replaceWith(logoutNav);
+
+            const loginComments = document.getElementById("login-comments").parentElement;
+            loginComments.remove();
+
+            const commentAddForm = document.getElementById("comment-add-form");
+            commentAddForm.classList.remove("invisible");
+            const commentsDeleteButton = document.getElementById("comments-delete");
+            commentsDeleteButton.classList.remove("invisible");
+
+            console.log("LOGGED IN");
+        } else {
+            const loginNav = document.getElementById("login-nav");
+            loginNav.setAttribute("href", url);
+            const loginCommentsLink = document.getElementById("login-comments");
+            loginCommentsLink.setAttribute("href", url);
+
+            console.log("LOGGED OUT");
+        }
+    });
+}
+
+function ifLoggedIn() {
+
+}
+
+function ifLoggedOut() {
+    
+}
 
 // validation of comment-add form
 // if any of the fields if empty - display error message
@@ -282,7 +325,6 @@ function endGame(score, questions, quizContainer) {
     const endText = document.createElement("div");
     endText.innerText = "Your score: " + score +
         "/" + questions.length + ". Thank you for playing! By the way, that's true, the right answer is always right :)";
-    endText.classList.add("quizEnd");
     // filling quizContainer only with "thanks for playing" text
     quizContainer.innerHTML = "";
     quizContainer.append(endText);
