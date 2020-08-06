@@ -212,10 +212,12 @@ function createCommentElement(comment) {
     commentElement.classList.add("comment-item");
 
     // create image field and append it to commentElement
-    const commentImage = document.createElement("img");
-    commentImage.classList.add("comment-image");
-    commentImage.setAttribute("src", comment.commentImageUrl);
-    commentElement.append(commentImage);
+    if (comment.commentImageUrl !== undefined) {
+        const commentImage = document.createElement("img");
+        commentImage.classList.add("comment-image");
+        commentImage.setAttribute("src", comment.commentImageUrl);
+        commentElement.append(commentImage);
+    }
 
     // create comment-text-block element (all comment content without image)
     const commentTextBlock = document.createElement("div");
