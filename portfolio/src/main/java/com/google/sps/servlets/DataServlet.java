@@ -43,14 +43,19 @@ import java.util.List;
 /* Servlet that stores and returns comments */
 @WebServlet("/comments")
 public class DataServlet extends HttpServlet {
-    /* expects maxcomments parameter (int); default: MAX_COMMENTS_NUMBER
-     *.        timestamp parameter (long); default: current time + const
-     *.        direction (next or previous : string); default: next
-     *.        commentsonpage (int) (currently); default: maxcomments
-     * if parameters are invalid - redirects to '/'
-     * returns json of Commeend object
+    /* Expects maxcomments parameter of type int
+     *.        timestamp parameter of type long
+     *.        direction of type string. Can be either "next" or "previous"
+     *.        commentsonpage of type int. Means how many comments are now on page
+     * If parameters are not set in the request - sets them to default. Default parameters are:
+     *         for maxcomments - MAX_COMMENTS_NUMBER
+     *.        for timestamp - current time + some_const
+     *.        for direction - "next"
+     *.        for commentsonpage - maxcomments
+     * If parameters are invalid - returns 400 error.
+     * Returns json of CommentSend object.
      * CommentsSend.comments consists of maxcomments (or less) comments, which timestamp >
-     * lastTimestamp if direction = next, or <= lastTimestamp (- maxcomments comments) if direction = previous
+     * lastTimestamp if direction = next, or <= lastTimestamp (- maxcomments number comments) if direction = previous.
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -65,12 +70,12 @@ public class DataServlet extends HttpServlet {
             try {
                 maxNumberOfComments = Integer.parseInt(maxNumberOfCommentsString);
             } catch (NumberFormatException e) {
-                response.sendRedirect("/");
+                throw400error(response);
                 return;
             }
         }
         if (maxNumberOfComments < 0 || maxNumberOfComments > MAX_COMMENTS_NUMBER) {
-            response.sendRedirect("/");
+            throw400error(response);
             return;
         }
 
@@ -83,7 +88,7 @@ public class DataServlet extends HttpServlet {
             try {
                 lastTimestamp = Long.parseLong(lastTimestampString);
             } catch (NumberFormatException e) {
-                response.sendRedirect("/");
+                throw400error(response);
                 return;
             }
         }
@@ -94,7 +99,7 @@ public class DataServlet extends HttpServlet {
             direction = "next";
         }
         if (!direction.equals("next") && !direction.equals("previous")) {
-            response.sendRedirect("/");
+            throw400error(response);
             return;
         }
 
@@ -107,7 +112,7 @@ public class DataServlet extends HttpServlet {
             try {
                 commentsOnPage = Integer.parseInt(commentsOnPageString);
             } catch (NumberFormatException e) {
-                response.sendRedirect("/");
+                throw400error(response);
                 return;
             }
         }
@@ -117,15 +122,18 @@ public class DataServlet extends HttpServlet {
         SortDirection sortDirection;
         FetchOptions fetchOptions;
 
-        // set query options depending on whether the user want to see next or previous comments
+        // set query options depending on whether the user wants to see next or previous comments
         if (direction.equals("next")) {
             timeFilter =
                     new FilterPredicate("timestamp", FilterOperator.LESS_THAN, lastTimestamp);
             sortDirection = SortDirection.DESCENDING;
             fetchOptions = FetchOptions.Builder.withLimit(maxNumberOfComments);
         } else {
-            // if previous - sort query in other direction and get comments that are
-            // currently on page and those we will load
+            /* If user wants to see previous comments - sort query in other direction and get comments
+             * that are currently on page + those we will load on page.
+             * We get comments that are currently on page, because they are earlier in the query,
+             * than the comments we need. We will offset them later.
+             */
             timeFilter =
                     new FilterPredicate("timestamp", FilterOperator.GREATER_THAN_OR_EQUAL, lastTimestamp);
             sortDirection = SortDirection.ASCENDING;
@@ -135,8 +143,9 @@ public class DataServlet extends HttpServlet {
         // get datastore
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-        // check if user wants next comments, and current comment is already the last one
-        // if so, return current comments
+        /* Check if user wants next comments, and current comment is already the last one.
+         * If so, return current comments
+         */
         long minTimestamp = getMinTimestamp(datastore);
         if (minTimestamp == lastTimestamp && direction.equals("next")) {
             timeFilter =
@@ -160,9 +169,17 @@ public class DataServlet extends HttpServlet {
             comments.add(comment);
         }
 
-        // reverse comments and offset current comments if direction==previous
+        /* If direction==previous, reverse comments and offset comments that are currently on page.
+         * Here we also take care of the case when user wants to see previous comments,
+         * and the comments currently on page are already the first ones.
+         * In this case, comment ArrayList consists only of comments that are currently on page,
+         * and we won't offset them.
+         */
         if (direction.equals("previous")) {
             Collections.reverse(comments);
+            /* Math.min function takes care of edge case when there are less than
+             * maxNumberOfComments comments in database
+             */
             comments = new ArrayList<Comment>(
                 comments.subList(0, Math.min(maxNumberOfComments, comments.size())));
         }
@@ -190,9 +207,9 @@ public class DataServlet extends HttpServlet {
         response.getWriter().println(json);
     }
 
-    /* expects comment-text, comment-owner parameters
-     * returns redirect
-     * puts comment to the database
+    /* This method is used to submit a form with new comment and put it to the database.
+     * Expects comment-text, comment-owner string parameters from form.
+     * Returns redirect to '/#comments'
      */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -233,5 +250,14 @@ public class DataServlet extends HttpServlet {
             minTimestamp = 0;
         }
         return minTimestamp;
+    }
+
+    /* changes response so that it will return  400 error */
+    private static void throw400error(HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println("<html><body><h1>HTTP 400 error</h1>" +
+                "<h2>Invalid request parameters</h2>" +
+                "<a href='/'>return to homepage</a></body></html>");
     }
 }
