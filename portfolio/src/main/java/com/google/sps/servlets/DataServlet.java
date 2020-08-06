@@ -49,7 +49,7 @@ public class DataServlet extends HttpServlet {
      *.        commentsonpage of type int. Means how many comments are now on page
      * If parameters are not set in the request - sets them to default. Default parameters are:
      *         for maxcomments - MAX_COMMENTS_NUMBER
-     *.        for timestamp - current time + some_const
+     *.        for timestamp - current time
      *.        for direction - "next"
      *.        for commentsonpage - maxcomments
      * If parameters are invalid - returns 400 error.
@@ -83,7 +83,7 @@ public class DataServlet extends HttpServlet {
         String lastTimestampString = request.getParameter("timestamp");
         long lastTimestamp;
         if (lastTimestampString == null) {
-            lastTimestamp = System.currentTimeMillis() + 10;
+            lastTimestamp = System.currentTimeMillis();
         } else {
             try {
                 lastTimestamp = Long.parseLong(lastTimestampString);
@@ -144,7 +144,10 @@ public class DataServlet extends HttpServlet {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
         /* Check if user wants next comments, and current comment is already the last one.
-         * If so, return current comments
+         * If so, return current comments.
+         * We change direction to previous here, because we will get the comments
+         * from reversed query, the same way we get previous comments.
+         * We just won't offset them later.
          */
         long minTimestamp = getMinTimestamp(datastore);
         if (minTimestamp == lastTimestamp && direction.equals("next")) {
@@ -152,7 +155,7 @@ public class DataServlet extends HttpServlet {
                     new FilterPredicate("timestamp", FilterOperator.GREATER_THAN_OR_EQUAL, lastTimestamp);
             sortDirection = SortDirection.ASCENDING;
             fetchOptions = FetchOptions.Builder.withLimit(commentsOnPage);
-            direction = "stay";
+            direction = "previous";
         }
 
         // make prepared query of comments from datastore
@@ -182,11 +185,6 @@ public class DataServlet extends HttpServlet {
              */
             comments = new ArrayList<Comment>(
                 comments.subList(0, Math.min(maxNumberOfComments, comments.size())));
-        }
-
-        // reverse comments if direction==stay
-        if (direction.equals("stay")) {
-            Collections.reverse(comments);
         }
 
         // object to send back
