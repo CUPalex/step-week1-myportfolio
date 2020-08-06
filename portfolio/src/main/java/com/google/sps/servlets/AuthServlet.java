@@ -44,9 +44,10 @@ import java.util.List;
 @WebServlet("/auth")
 public class AuthServlet extends HttpServlet {
 
-    /* expects nothing
-     * returns AuthSend json object which consist of
-     *.        String url (login or logout) and bool isLoggedIn
+    /* Expects nothing.
+     * Returns AuthSend json object which consist of
+     *.        String url (it can be login or logout url, depending on user login status)
+     *.        and bool isLoggedIn.
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -54,17 +55,14 @@ public class AuthServlet extends HttpServlet {
         String url;
         Boolean isLoggedIn;
 
-        // get reference to UserService
         UserService userService = UserServiceFactory.getUserService();
 
         // set url and isLoggedIn vars
         if (userService.isUserLoggedIn()) {
-            String urlToRedirectToAfterUserLogsOut = "/";
-            url = userService.createLogoutURL(urlToRedirectToAfterUserLogsOut);
+            url = userService.createLogoutURL("/");
             isLoggedIn = true;
         } else {
-            String urlToRedirectToAfterUserLogsIn = "/";
-            url = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
+            url = userService.createLoginURL("/");
             isLoggedIn = false;
         }
         
