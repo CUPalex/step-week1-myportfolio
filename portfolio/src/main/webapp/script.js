@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     buttonDeleteComments.addEventListener("click", deleteAllComments);
 
     const commentAddForm = document.getElementById("comment-add-form");
-    
+
     // add validation to comment-add form
     commentAddForm.addEventListener("submit", commentAddFormValidate);
 
@@ -211,30 +211,38 @@ function createCommentElement(comment) {
     const commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
 
-    // create comment-owner field and append it to commentElement
+    // create image field and append it to commentElement
+    const commentImage = document.createElement("img");
+    commentImage.classList.add("comment-image");
+    commentImage.setAttribute("src", comment.commentImageUrl);
+    commentElement.append(commentImage);
+
+    // create comment-text-block element (all comment content without image)
+    const commentTextBlock = document.createElement("div");
+    commentTextBlock.classList.add("comment-text-block");
+
+    // create comment-owner field and append it to commentTextBlock
     const commentOwner = document.createElement("div");
     commentOwner.classList.add("comment-owner");
     commentOwner.innerHTML = comment.commentOwner;
-    commentElement.append(commentOwner);
+    commentTextBlock.append(commentOwner);
 
-    // create comment-date field and append it to commentElement
+    // create comment-date field and append it to commentTextBlock
     const commentDate = document.createElement("div");
     commentDate.classList.add("comment-date");
     // converts time in milliseconds to readable date string
     const date = new Date(comment.timestamp).toLocaleDateString();
     commentDate.innerHTML = date;
-    commentElement.append(commentDate);
+    commentTextBlock.append(commentDate);
 
-    // create comment-text field and append it to commentElement
+    // create comment-text field and append it to commentTextBlock
     const commentText = document.createElement("div");
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
-    commentElement.append(commentText);
+    commentTextBlock.append(commentText);
 
-    // create image field and append it to commentElement
-    const commentImage = document.createElement("img");
-    commentImage.setAttribute("src", comment.commentImageUrl);
-    commentElement.append(commentImage);
+    // append commentTextBlock to commentElement
+    commentElement.append(commentTextBlock);
 
     return commentElement;
 }
