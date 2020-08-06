@@ -48,9 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
 
-    // add validation to comment-add form
     const commentAddForm = document.getElementById("comment-add-form");
+    
+    // add validation to comment-add form
     commentAddForm.addEventListener("submit", commentAddFormValidate);
+
+    // add action attribute to comment-add form
+    fetchActionUrl(commentAddForm, "/blobstore-upload-url?forwardurl=/comments");
 
     // check if user is logged in and modify page depending on it
     checkAuth();
@@ -58,6 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // initially load comments
     loadComments(maxComments);
 });
+
+/* sets the url fetched from fetchUrl as action attribute to form
+ */
+function fetchActionUrl(form, fetchUrl) {
+    fetch(fetchUrl).then((response) => (response.text())).then((url) => {
+        form.setAttribute("action", url);
+    });
+}
 
 /* check if user is logged in,
  * add appropriate login/logout urls and hide/unhide form and delete button
@@ -218,6 +230,11 @@ function createCommentElement(comment) {
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
     commentElement.append(commentText);
+
+    // create image field and append it to commentElement
+    const commentImage = document.createElement("img");
+    commentImage.setAttribute("src", comment.commentImageUrl);
+    commentElement.append(commentImage);
 
     return commentElement;
 }
