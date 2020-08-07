@@ -186,12 +186,17 @@ footer {
 
 /* comments */
 .comment-item {
-    display: block;
+    position: relative;
     padding: 10px 18px;
     background-color: #DCDCDC;
     margin: 5px 0;
     width: 100%;
     border: 2px solid #555;
+    overflow: auto;
+}
+
+.comment-text-block {
+    padding: 0;
 }
 
 .comment-owner {
@@ -205,13 +210,10 @@ footer {
     font-style: italic;
 }
 
-.comment-text {
-    margin-top: 5px;
-}
-
 .comment-image {
-    display: block;
-    width: 150px;
+    float: left;
+    height: 100px;
+    margin: 13px 15px 13px 5px;
 }
 
 .comment-input-text {
