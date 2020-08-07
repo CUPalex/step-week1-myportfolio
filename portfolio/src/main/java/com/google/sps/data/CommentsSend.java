@@ -14,20 +14,16 @@
 
 package com.google.sps.data;
 
-/* A comment item */
-public final class Comment {
+import java.util.ArrayList;
 
-  private final String commentText;
-  private final String commentOwner;
-  private final long timestamp;
+/* A comments + lastTimestamp object to send in json in DataServlet.doGet */
+public final class CommentsSend {
 
-  public Comment(String commentText, String commentOwner, long timestamp) {
-    this.commentText = commentText;
-    this.commentOwner = commentOwner;
-    this.timestamp = timestamp;
-  }
+  private final long lastTimestamp;
+  private final ArrayList<Comment> comments;
 
-  public long getTimestamp(){
-      return timestamp;
+  public CommentsSend(long timestamp, ArrayList<Comment> comments) {
+    this.lastTimestamp = timestamp;
+    this.comments = comments;
   }
 }

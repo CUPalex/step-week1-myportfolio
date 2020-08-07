@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         maxComments = inputMaxComments;
 
-        // reload comments if valid
+        // reload comments
         loadComments(maxComments);
     });
     // set event to delete comments
@@ -73,21 +73,54 @@ function commentAddFormValidate(event) {
 
 // load maxComments comments and put them on page
 function loadComments(maxComments){
+    // properties of comments currently on page. for request
+    let lastTimestamp;
+    let commentsOnPage;
+    
     // load comments from DataServlet and read them as json
-    fetch(`/comments?maxcomments=${maxComments}`).
-            then((response) => (response.json())).then((json) => {
+    const load = function(direction) {
+        // include parameters in fetchURL
+        let fetchURL = `/comments?maxcomments=${maxComments}`;
+
+        if (lastTimestamp !== undefined) {
+            fetchURL += `&timestamp=${lastTimestamp}`;
+        }
+        if (direction !== undefined) {
+            fetchURL += `&direction=${direction}`;
+        }
+        if (commentsOnPage !== undefined) {
+            fetchURL += `&commentsonpage=${commentsOnPage}`;
+        }
+
+        // fetch data
+        fetch(fetchURL).then((response) => (response.json())).then((json) => {
               const commentsContainer = document.querySelector(".comments-container");
               commentsContainer.innerHTML = "";
-              json.forEach((comment) => {
+              json.comments.forEach((comment) => {
               commentsContainer.append(createCommentElement(comment));
             });
-    });
+
+            // update current values for future requests
+            lastTimestamp = json.lastTimestamp;
+            commentsOnPage = json.comments.length;
+        }).catch((error) => console.log("load comments fetch error: " + error));
+    };
+
+    // actually load comments
+    load();
+
+    // set event listeners for pagination
+    const rightArrow = document.getElementById("pagination-right");
+    rightArrow.onclick =  () => load("next");
+    const leftArrow = document.getElementById("pagination-left");
+    leftArrow.onclick =  () => load("previous");
 }
 
 // delete all comments from database
 function deleteAllComments() {
     // delete all comments in CommentDeleteServlet and refresh comment section on page
-    fetch("/delete-data", { method: "POST" }).then(() => loadComments(0));
+    fetch("/delete-data", { method: "POST" }).then(() => loadComments(0))
+            .catch((error) => console.log("deleteAllCommentsError: " + error));
 }
 
 // display error message after input element and mark
@@ -109,7 +142,7 @@ function displayErrorInput(inputElement, errorString) {
         inputElement.removeEventListener("click", removeErrorDisplay);
     };
 
-    // romoveErrorDisplay() triggers after the input element was clicked
+    // removeErrorDisplay() triggers after the input element was clicked
     // or 5s after error message was shown
     inputElement.addEventListener("click", removeErrorDisplay);
     setTimeout(removeErrorDisplay, 5000);
