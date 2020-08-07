@@ -23,14 +23,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/* servlet to use blobstore
+/* Servlet to use Blobstore - API to upload and store images.
+ * To use blobstore you should add a special url to the form,
+ * which you use to submit images. On that url blobstore takes care of the submitted image
+ * and then redirects to your servlet, which will handle post request.
+ * You will be able to get submitted image url from that servlet.
  */
 @WebServlet("/blobstore-upload-url")
 public class BlobstoreUploadServlet extends HttpServlet {
 
-    /* expects forwardurl parameter - url to handle post request
-    * returns an url to set to form's action attribute
-    */
+    /* Expects forwardurl parameter - url to handle post request.
+     * Returns an url to set to form's action attribute.
+     */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String forwardUrl = request.getParameter("forwardurl");
