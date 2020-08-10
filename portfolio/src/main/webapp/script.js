@@ -14,7 +14,7 @@
 
 "use strict"
 
-// is called when page loads
+/* is called when page loads */
 document.addEventListener("DOMContentLoaded", () => {
     // set max-comments variable
     const DEFAULT_COMMENTS_NUMBER = 3;
@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // reload comments
         loadComments(maxComments);
     });
+
     // set event to delete comments
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
@@ -51,12 +52,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const commentAddForm = document.getElementById("comment-add-form");
     commentAddForm.addEventListener("submit", commentAddFormValidate);
 
+    // check if user is logged in and modify page depending on it
+    checkAuth();
+
     // initially load comments
     loadComments(maxComments);
 });
 
-// validation of comment-add form
-// if any of the fields if empty - display error message
+/* check if user is logged in,
+ * add appropriate login/logout urls and hide/unhide form and delete button
+ */
+function checkAuth() {
+    // ask AuthServlet if user is logged in and read json response
+    fetch("/auth").then((response) => (response.json())).then((json) => {
+        if (json.isLoggedIn) {
+            // replace login button in navbar with logout button
+            const logoutNav = document.createElement("a");
+            logoutNav.innerHTML = "Logout";
+            logoutNav.classList.add("right-align");
+            logoutNav.setAttribute("id", "logout-nav");
+            logoutNav.setAttribute("href", json.url);
+            const loginNav = document.getElementById("login-nav");
+            loginNav.replaceWith(logoutNav);
+
+            // remove text telling to login from comments section
+            const loginComments = document.getElementById("login-comments").parentElement;
+            loginComments.remove();
+
+            // unhide form
+            const commentAddForm = document.getElementById("comment-add-form");
+            commentAddForm.classList.remove("invisible");
+
+            // unhide comments-delete button
+            const commentsDeleteButton = document.getElementById("comments-delete");
+            commentsDeleteButton.classList.remove("invisible");
+        } else {
+            // add login url to navbar button
+            const loginNav = document.getElementById("login-nav");
+            loginNav.setAttribute("href", json.url);
+
+            // add login url to the text in comments section
+            const loginCommentsLink = document.getElementById("login-comments");
+            loginCommentsLink.setAttribute("href", json.url);
+        }
+    });
+}
+
+/* validation of comment-add form
+ * if any of the fields are empty - display error message
+ */
 function commentAddFormValidate(event) {
     // if name field is empty
     if (event.target.elements["comment-owner"].value === "") {
@@ -71,7 +115,7 @@ function commentAddFormValidate(event) {
     }
 }
 
-// load maxComments comments and put them on page
+/* load maxComments comments and put them on page */
 function loadComments(maxComments){
     // properties of comments currently on page. for request
     let lastTimestamp;
@@ -116,15 +160,16 @@ function loadComments(maxComments){
     leftArrow.onclick =  () => load("previous");
 }
 
-// delete all comments from database
+/* delete all comments from database */
 function deleteAllComments() {
     // delete all comments in CommentDeleteServlet and refresh comment section on page
     fetch("/delete-data", { method: "POST" }).then(() => loadComments(0))
             .catch((error) => console.log("deleteAllCommentsError: " + error));
 }
 
-// display error message after input element and mark
-// input element as errored
+/* display error message after input element and mark
+ * input element as errored
+ */
 function displayErrorInput(inputElement, errorString) {
     // mark input element as errored
     inputElement.classList.add("error-input");
@@ -148,7 +193,7 @@ function displayErrorInput(inputElement, errorString) {
     setTimeout(removeErrorDisplay, 5000);
 }
 
-// creates and returns DOM comment-item element from class from datastore
+/* creates and returns DOM comment-item element from class from datastore */
 function createCommentElement(comment) {
     // create comment element
     const commentElement = document.createElement("div");
@@ -177,7 +222,7 @@ function createCommentElement(comment) {
     return commentElement;
 }
 
-// init quiz game
+/* init quiz game */
 function initGame() {
     const questions = [
         "Who is the first Russian tsar?",
@@ -220,8 +265,8 @@ function initGame() {
     correctText.classList.add("invisible");
     wrongText.classList.add("invisible");
     question.classList.add("quiz-question");
-    leftButton.classList.add("quiz-button");
-    rightButton.classList.add("quiz-button");
+    leftButton.classList.add("button");
+    rightButton.classList.add("button");
 
     quizContainer.append(scoreElement);
     quizContainer.append(question);
@@ -259,9 +304,10 @@ function initGame() {
      score, scoreElement, leftButton, rightButton, question, quizContainer);
 }
 
-// display question on page
-// if question asked to display is the one after the last question (i.e. it
-// doesn't exist) - end game
+/* display question on page
+ * if question asked to display is the one after the last question (i.e. it
+ * doesn't exist) - end game
+ */
 function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
  score, scoreElement, leftButton, rightButton, question, quizContainer) {
     // if it was the last question
@@ -276,13 +322,12 @@ function displayQuestion(currentQuestion, questions, leftAnswers, rightAnswers,
     rightButton.innerHTML = rightAnswers[currentQuestion];
 }
 
-// display end-game message
+/* display end-game message */
 function endGame(score, questions, quizContainer) {
     // creating element with "thanks for playing" text
     const endText = document.createElement("div");
     endText.innerText = "Your score: " + score +
         "/" + questions.length + ". Thank you for playing! By the way, that's true, the right answer is always right :)";
-    endText.classList.add("quizEnd");
     // filling quizContainer only with "thanks for playing" text
     quizContainer.innerHTML = "";
     quizContainer.append(endText);

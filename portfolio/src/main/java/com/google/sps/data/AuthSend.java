@@ -14,19 +14,17 @@
 
 package com.google.sps.data;
 
-import java.util.ArrayList;
-
 /**
- * Represents an object which is returned from DataServlet.doGet.
- * Contains comments and some developer data
+ * Represents an object which is returned from AuthServlet.doGet.
+ * Contains information about user authentication, is used to allow login and logout actions
  */
-public final class CommentsSend {
+public final class AuthSend {
 
-  private final long lastTimestamp;
-  private final ArrayList<Comment> comments;
+  private final String url;
+  private final Boolean isLoggedIn;
 
-  public CommentsSend(long timestamp, ArrayList<Comment> comments) {
-    this.lastTimestamp = timestamp;
-    this.comments = comments;
+  public AuthSend(Boolean isLoggedIn, String url) {
+    this.isLoggedIn = isLoggedIn;
+    this.url = url;
   }
 }
