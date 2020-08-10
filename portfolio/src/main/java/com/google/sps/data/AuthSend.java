@@ -14,8 +14,9 @@
 
 package com.google.sps.data;
 
-/* A (login or logout) url + bool isLoggedIn 
- * object to send in json in AuthServlet.doGet
+/**
+ * Represents an object which is returned from AuthServlet.doGet.
+ * Contains information about user authentication, is used to allow login and logout actions
  */
 public final class AuthSend {
 
