@@ -200,7 +200,7 @@ public class DataServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         UserService userService = UserServiceFactory.getUserService();
         
-        // if users iare not logged in, they can't post comments - send them to "/"
+        // if users are not logged in, they can't post comments - send them to "/"
         if (!userService.isUserLoggedIn()) {
             response.sendRedirect("/");
             return;
