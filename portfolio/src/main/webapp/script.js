@@ -48,9 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const buttonDeleteComments = document.getElementById("comments-delete");
     buttonDeleteComments.addEventListener("click", deleteAllComments);
 
-    // add validation to comment-add form
     const commentAddForm = document.getElementById("comment-add-form");
+
+    // add validation to comment-add form
     commentAddForm.addEventListener("submit", commentAddFormValidate);
+
+    // add action attribute to comment-add form
+    fetchActionUrl(commentAddForm, "/blobstore-upload-url?forwardurl=/comments");
 
     // check if user is logged in and modify page depending on it
     checkAuth();
@@ -58,6 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // initially load comments
     loadComments(maxComments);
 });
+
+/* sets the url fetched from fetchUrl as action attribute to form
+ */
+function fetchActionUrl(form, fetchUrl) {
+    fetch(fetchUrl).then((response) => (response.text())).then((url) => {
+        form.setAttribute("action", url);
+    });
+}
 
 /* check if user is logged in,
  * add appropriate login/logout urls and hide/unhide form and delete button
@@ -199,25 +211,40 @@ function createCommentElement(comment) {
     const commentElement = document.createElement("div");
     commentElement.classList.add("comment-item");
 
-    // create comment-owner field and append it to commentElement
+    // create image field and append it to commentElement
+    if (comment.commentImageUrl !== undefined) {
+        const commentImage = document.createElement("img");
+        commentImage.classList.add("comment-image");
+        commentImage.setAttribute("src", comment.commentImageUrl);
+        commentElement.append(commentImage);
+    }
+
+    // create comment-text-block element (all comment content without image)
+    const commentTextBlock = document.createElement("div");
+    commentTextBlock.classList.add("comment-text-block");
+
+    // create comment-owner field and append it to commentTextBlock
     const commentOwner = document.createElement("div");
     commentOwner.classList.add("comment-owner");
     commentOwner.innerHTML = comment.commentOwner;
-    commentElement.append(commentOwner);
+    commentTextBlock.append(commentOwner);
 
-    // create comment-date field and append it to commentElement
+    // create comment-date field and append it to commentTextBlock
     const commentDate = document.createElement("div");
     commentDate.classList.add("comment-date");
     // converts time in milliseconds to readable date string
     const date = new Date(comment.timestamp).toLocaleDateString();
     commentDate.innerHTML = date;
-    commentElement.append(commentDate);
+    commentTextBlock.append(commentDate);
 
-    // create comment-text field and append it to commentElement
+    // create comment-text field and append it to commentTextBlock
     const commentText = document.createElement("div");
     commentText.classList.add("comment-text");
     commentText.innerHTML = comment.commentText;
-    commentElement.append(commentText);
+    commentTextBlock.append(commentText);
+
+    // append commentTextBlock to commentElement
+    commentElement.append(commentTextBlock);
 
     return commentElement;
 }
