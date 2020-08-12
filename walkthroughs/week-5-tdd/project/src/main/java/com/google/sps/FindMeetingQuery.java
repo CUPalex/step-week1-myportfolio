@@ -27,21 +27,43 @@ import java.util.Set;
 public final class FindMeetingQuery {
     /**
      * Function to find all possible slots for a meeting of group of people, with fixed duration.
+     * All mandatory attendees must be free at the time of the meeting, and if there are any time slots
+     * when also all optional attendees are free, it is good, we will find those slots
      * @return collection of TimeRanges of all availible slots.
      */
     public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
+        // create hashset with all the mandatory and optional attendees
+        HashSet<String> allAttendees = new HashSet<>(request.getAttendees());
+        allAttendees.addAll(request.getOptionalAttendees());
+
+        Collection<TimeRange> withOptionalAttendees = getMeetingSlots(events, allAttendees, request.getDuration());
+        
+        // if there are slots on which both optional and mandatory attendees are free - return them
+        // if not - return only slots on which mandatory attendees are free
+        if (withOptionalAttendees.isEmpty()) {
+            return getMeetingSlots(events, request.getAttendees(), request.getDuration());
+        } else {
+            return withOptionalAttendees;
+        }
+    }
+
+    /**
+     * Function to get all possible slots for a meeting of specified group of people,
+     * with no optional attendees.
+     */
+    Collection<TimeRange> getMeetingSlots(Collection<Event> events, Collection<String> attendees, long duration) {
         // make an array for getEmptyTimeRanges function
         // put there all significant events' START ad END points assuming that event is a segment on time line.
         ArrayList<Point> meetingsPoints = new ArrayList<>();
 
         for (Event event : events) {
-            if (doIntersect(event.getAttendees(), request.getAttendees())) {
+            if (doIntersect(event.getAttendees(), attendees)) {
                 meetingsPoints.add(new Point(Point.Type.START, event));
                 meetingsPoints.add(new Point(Point.Type.END, event));
             }
         }
         
-        return getEmptyTimeRanges(meetingsPoints, TimeRange.START_OF_DAY, TimeRange.END_OF_DAY, request.getDuration());
+        return getEmptyTimeRanges(meetingsPoints, TimeRange.START_OF_DAY, TimeRange.END_OF_DAY, duration);
     }
 
     /**
