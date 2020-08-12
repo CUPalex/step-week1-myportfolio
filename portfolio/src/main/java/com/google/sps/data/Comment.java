@@ -20,11 +20,13 @@ public final class Comment {
   private final String commentText;
   private final String commentOwner;
   private final long timestamp;
+  private final String commentImageUrl;
 
-  public Comment(String commentText, String commentOwner, long timestamp) {
+  public Comment(String commentText, String commentOwner, long timestamp, String commentImageUrl) {
     this.commentText = commentText;
     this.commentOwner = commentOwner;
     this.timestamp = timestamp;
+    this.commentImageUrl = commentImageUrl;
   }
 
   public long getTimestamp(){

@@ -62,12 +62,15 @@
                 <div id="pagination-left">&laquo;</div>
                 <div id="pagination-right">&raquo;</div>
         </div>
-        <form action="/comments" method="POST" id="comment-add-form" class="invisible">
+        <form action="/comments" method="POST" id="comment-add-form" class="invisible" enctype="multipart/form-data">
             <p class="comment-input-title">Add your comment:</p>
             <label for="comment-owner">Name: </label>
             <input type="text" class="comment-input-owner" name="comment-owner">
             <label for="comment-text">Comment: </label>
             <textarea class="comment-input-text" name="comment-text"></textarea>
+            <label for="comment-image" class="button">Upload photo</label>
+            <input type="file" id="comment-image" name="comment-image">
+            <br>
             <input type="submit" class="button">
         </form>
         <p>Please, <a id="login-comments">login</a> to post comments.</p>
