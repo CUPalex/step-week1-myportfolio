@@ -14,22 +14,17 @@
 
 package com.google.sps.data;
 
-/* A comment item */
-public final class Comment {
+/**
+ * Represents an object which is returned from AuthServlet.doGet.
+ * Contains information about user authentication, is used to allow login and logout actions
+ */
+public final class AuthSend {
 
-  private final String commentText;
-  private final String commentOwner;
-  private final long timestamp;
-  private final String commentImageUrl;
+  private final String url;
+  private final Boolean isLoggedIn;
 
-  public Comment(String commentText, String commentOwner, long timestamp, String commentImageUrl) {
-    this.commentText = commentText;
-    this.commentOwner = commentOwner;
-    this.timestamp = timestamp;
-    this.commentImageUrl = commentImageUrl;
-  }
-
-  public long getTimestamp(){
-      return timestamp;
+  public AuthSend(Boolean isLoggedIn, String url) {
+    this.isLoggedIn = isLoggedIn;
+    this.url = url;
   }
 }

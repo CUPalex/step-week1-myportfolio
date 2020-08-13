@@ -16,7 +16,10 @@ package com.google.sps.data;
 
 import java.util.ArrayList;
 
-/* A comments + lastTimestamp object to send in json in DataServlet.doGet */
+/**
+ * Represents an object which is returned from DataServlet.doGet.
+ * Contains comments and some developer data
+ */
 public final class CommentsSend {
 
   private final long lastTimestamp;
