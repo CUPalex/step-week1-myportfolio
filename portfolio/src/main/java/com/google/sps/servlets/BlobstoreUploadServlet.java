@@ -22,6 +22,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.IllegalArgumentException;
+
+import java.util.logging.Logger;
 
 /* Servlet to use Blobstore - API to upload and store images.
  * To use blobstore you should add a special url to the form,
@@ -31,18 +34,45 @@ import javax.servlet.http.HttpServletResponse;
  */
 @WebServlet("/blobstore-upload-url")
 public class BlobstoreUploadServlet extends HttpServlet {
+    static Logger log = Logger.getLogger(BlobstoreUploadServlet.class.getName());
 
-    /* Expects forwardurl parameter - url to handle post request.
+    /**
+     * Expects forwardurl parameter - url to handle post request.
      * Returns an url to set to form's action attribute.
      */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String forwardUrl = request.getParameter("forwardurl");
+
+        // if forwardurl is not provided - throw error
+        if (forwardUrl == null) {
+            throw400error(response);
+            return;
+        }
         
         BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
-        String uploadUrl = blobstoreService.createUploadUrl(forwardUrl);
+        String uploadUrl;
+
+        // Exception is thrown if forwardurl is invalid. In this case throw error
+        try {
+            uploadUrl = blobstoreService.createUploadUrl(forwardUrl);
+        } catch (IllegalArgumentException e) {
+            throw400error(response);
+            return;
+        }
 
         response.setContentType("text/html");
         response.getWriter().println(uploadUrl);
+    }
+
+    /**
+     * Changes response so that it will return  400 error
+     */
+    private static void throw400error(HttpServletResponse response) throws IOException {
+        response.setContentType("text/html;");
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println("<html><body><h1>HTTP 400 error</h1>" +
+                "<h2>Invalid request parameters</h2>" +
+                "<a href='/'>return to homepage</a></body></html>");
     }
 }
