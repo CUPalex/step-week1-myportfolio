@@ -106,7 +106,7 @@ public final class FindMeetingQuery {
         }
 
         // check if the segment ending at lastPoint fits
-        if (lastPoint - lastTime >= minLength) {
+        if (lastPoint - lastTime + 1 >= minLength) {
             emptyTimeRanges.add(TimeRange.fromStartEnd(lastTime, lastPoint, true));
         }
 
