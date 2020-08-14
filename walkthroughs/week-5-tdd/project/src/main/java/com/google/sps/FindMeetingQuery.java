@@ -42,34 +42,32 @@ public final class FindMeetingQuery {
         // if not - return only slots on which mandatory attendees are free
         if (withOptionalAttendees.isEmpty()) {
             return getMeetingSlots(events, request.getAttendees(), request.getDuration());
-        } else {
-            return withOptionalAttendees;
         }
+        return withOptionalAttendees;
     }
 
     /**
-     * Function to get all possible slots for a meeting of specified group of people,
-     * with no optional attendees.
+     * Function to get all possible slots for a meeting of specified group of people.
      */
-    Collection<TimeRange> getMeetingSlots(Collection<Event> events, Collection<String> attendees, long duration) {
+    Collection<TimeRange> getMeetingSlots(Collection<Event> events, Collection<String> meetingAttendees, long meetingDuration) {
         // make an array for getEmptyTimeRanges function
-        // put there all significant events' START ad END points assuming that event is a segment on time line.
+        // put there all significant events' START and END points.
         ArrayList<Point> meetingsPoints = new ArrayList<>();
 
         for (Event event : events) {
-            if (doIntersect(event.getAttendees(), attendees)) {
+            if (doIntersect(event.getAttendees(), meetingAttendees)) {
                 meetingsPoints.add(new Point(Point.Type.START, event));
                 meetingsPoints.add(new Point(Point.Type.END, event));
             }
         }
         
-        return getEmptyTimeRanges(meetingsPoints, TimeRange.START_OF_DAY, TimeRange.END_OF_DAY, duration);
+        return getEmptyTimeRanges(meetingsPoints, TimeRange.START_OF_DAY, TimeRange.END_OF_DAY, meetingDuration);
     }
 
     /**
      * @return all segments from firstPoint to lastPoint inclusive which are no shorter than minLength
      *.        and do not intersect with segments from intersectingSegments
-     * @param intersectingSegments - array of Points. To put segment in this array, you should put its
+     * @param segmentsPoints - array of Points. To put segment in this array, you should put its
      *.                              START and END Points there.
      * @param firstPoint - beginning of all time. Returned collection will not contain time before it.
      * @param lastPoint - end of all time. Returned collection will not contain time after it.
@@ -77,17 +75,17 @@ public final class FindMeetingQuery {
      * Algorithm:
      *.        All empty slots can start only where some segment ends and end only where some segment starts (or at
                firstPoint or lastPoint)
-     *.        There cannot be any other points from intersectingSegments inside the empty slot - only its start end end.
-     *         Sort all points in intersectingSegments in ascending order and look at them one by one.
+     *.        There cannot be any other points from segmentsPoints inside the empty slot - only its start end end.
+     *         Sort all points in segmentsPoints in ascending order and look at them one by one.
      *.        Count how many segments are currently covering the point you are looking at: get a counter
      *.        which increments every time you look at START point and decrements every time you look at END point.
-     *.        If the point is covered with 0 segments - it is a start of segment which can be one of the answer
+     *.        If the point is covered with 0 segments - it belongs to a segment which can be one of the answer
      *.        segments if it has appropriate length.
      *.        So every time we look at a point, we check if the previous interval was segment-free and if so, we check
-     *.        the length of that interval to be at leash minLength.
+     *.        the length of that interval to be at least minLength.
      */
-    private Collection<TimeRange> getEmptyTimeRanges(ArrayList<Point> intersectingSegments, int firstPoint, int lastPoint, long minLength) {
-        Collections.sort(intersectingSegments, Point.ORDER_START_BEFORE_END);
+    private Collection<TimeRange> getEmptyTimeRanges(ArrayList<Point> segmentsPoints, int firstPoint, int lastPoint, long minLength) {
+        Collections.sort(segmentsPoints, Point.ORDER_BY_TIME_START_FIRST);
 
         int openSegments = 0;
         int lastTime = firstPoint;
@@ -95,7 +93,7 @@ public final class FindMeetingQuery {
         // the array we will return
         ArrayList<TimeRange> emptyTimeRanges = new ArrayList<>();
 
-        for (Point point : intersectingSegments) {
+        for (Point point : segmentsPoints) {
             if (point.type == Point.Type.START) {
                 if (openSegments == 0 && point.time - lastTime >= minLength) {
                     emptyTimeRanges.add(TimeRange.fromStartEnd(lastTime, point.time, false));
@@ -128,27 +126,31 @@ public final class FindMeetingQuery {
     }
 
     /**
-     * Point of segment. Can be START or END, have its coors on timeline - time, and Comparator by time.
+     * Point of segment. Can be START or END, have its coords on timeline - time, and Comparator by time.
      * Has only Point(Type, Event) constructor - makes a point of given type, assuming that event is a segment on timeline.
      */
     private static final class Point {
         public static enum Type {
             START, END
         }
+
         public final Type type;
         public final int time;
+
         Point(Type type, Event event) {
             this.type = type;
+
             if (type == Type.START) {
                 time = event.getWhen().start();
             } else {
                 time = event.getWhen().end();
             }
         }
+
         /**
          * Sorts by time. If times are equal - START point is less than END point.
          */
-        public static final Comparator<Point> ORDER_START_BEFORE_END = new Comparator<Point>() {
+        public static final Comparator<Point> ORDER_BY_TIME_START_FIRST = new Comparator<Point>() {
             @Override
             public int compare(Point a, Point b) {
                 if (a.time == b.time) {
@@ -157,10 +159,10 @@ public final class FindMeetingQuery {
                     }
                     if (a.type == Type.START) {
                         return -1;
-                    } else {
-                        return 1;
                     }
+                    return 1;
                 }
+
                 return Long.compare(a.time, b.time);
             }
         };
